@@ -1,3 +1,5 @@
+import csv
+
 # Create the hash table class with chaining
 class ChainingHashTable:
     # Create a constructor
@@ -57,12 +59,8 @@ bestMovies = [
     [4, 'Trisha Mejia']
 ]
 
-myTestHash = ChainingHashTable()
-myTestHash.insert(bestMovies[0][0], bestMovies[0][1])
-myTestHash.insert(bestMovies[1][0], bestMovies[1][1])
-myTestHash.insert(bestMovies[2][0], bestMovies[2][1])
-myTestHash.insert(bestMovies[3][0], bestMovies[3][1])
-print(myTestHash.table)
-print(myTestHash.remove(1))
-print(myTestHash.table)
+with open('WGUPS Package File.csv', 'r') as csv_file:
+    csv_reader = csv.reader(csv_file)
+    for line in csv_reader:
+        print(line)
 
