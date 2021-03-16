@@ -75,30 +75,59 @@ class DeliveryPackage:
         return "%s, %s, %s, %s, %s, %s, %s, %s, %s" % (self.ID, self.address, self.city, self.state, self.postal, self.deadline, self.mass, self.notes, self.status)
 
 
-def loadPackageData(filename):
+def load_package_data(filename):
     with open(filename) as csv_file:
-        packageData = csv.reader(csv_file)
-        next(packageData) # skip header
-        for package in packageData:
-            packageId = int(package[0]) # this needs to be an int for the code to work
-            packageAddress = package[1]
-            packageCity = package[2]
-            packageState = package[3]
-            packageZip = package[4]
-            packageDeadline = package[5]
-            packageWeight = package[6]
-            packageNotes = package[7]
-            packageStatus = "At Station"
+        package_data = csv.reader(csv_file)
+        next(package_data) # skip header
+        for package in package_data:
+            package_id = int(package[0]) # this needs to be an int for the code to work
+            package_address = package[1]
+            package_city = package[2]
+            package_state = package[3]
+            package_zip = package[4]
+            package_deadline = package[5]
+            package_weight = package[6]
+            package_notes = package[7]
+            package_status = "At the hub"
 
-            packageToDeliver = DeliveryPackage(packageId, packageAddress, packageCity, packageState, packageZip, packageDeadline, packageWeight, packageNotes, packageStatus)
+            package_to_deliver = DeliveryPackage(package_id, package_address, package_city, package_state, package_zip, package_deadline, package_weight, package_notes, package_status)
 
-            myHashTable.insert(packageId, packageToDeliver)
+            myHashTable.insert(package_id, package_to_deliver)
 
 
 myHashTable = ChainingHashTable()
 
 
-loadPackageData('WGUPS Package File.csv')
+load_package_data('WGUPS Package File.csv')
 
 for i in range(len(myHashTable.table)+1):
     print("Key: {} and Package: {}".format(i+1, myHashTable.search(i+1)))
+
+
+class Vertex:
+    def __init__(self, label):
+        self.label = label
+        self.distance = float('inf')
+        self.last_vertex = None
+
+
+class Graph:
+    def __init__(self):
+        self.adjacency_list = {}
+        self.edge_weights = {}
+
+    def add_vertex(self, new_vertex):
+        self.adjacency_list[new_vertex] = []
+
+    def add_directed_edge(self, from_vertex, to_vertex, weight=1.0):
+        self.edge_weights[(from_vertex, to_vertex)] = weight
+        self.adjacency_list[from_vertex].append(to_vertex)
+
+    def add_undirected_edge(self, vertex_a, vertex_b, weight=1.0):
+        self.add_directed_edge(vertex_a, vertex_b, weight)
+        self.add_directed_edge(vertex_b, vertex_a, weight)
+
+
+
+
+
