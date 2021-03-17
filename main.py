@@ -103,7 +103,7 @@ load_package_data('WGUPS Package File.csv')
 for i in range(len(myHashTable.table)):
     print("Key: {} and Package: {}".format(i+1, myHashTable.search(i+1)))
 
-
+# create a vertex with a label
 class Vertex:
     def __init__(self, label):
         self.label = label
@@ -113,7 +113,7 @@ class Vertex:
     def __str__(self):
         return "%s" % self.label
 
-
+# create the graph and add functionality to add vertices and map edges
 class Graph:
     def __init__(self):
         self.adjacency_list = {}
@@ -131,19 +131,31 @@ class Graph:
         self.add_directed_edge(vertex_b, vertex_a, weight)
 
 
+map_graph = Graph()
+
+
+# load the distance data and then create a graph from it
 def load_distance_data(filename):
     # create an array to fit the names of the vertices
-    location_list = []
+    location_name_list = []
+    double_name_list = []
     with open(filename) as csv_file:
-        distance_data = csv.reader(csv_file)
-
-        # create the list of locations to eventually map to a dictionary
+        distance_data = csv.DictReader(csv_file)
         for row in distance_data:
-            new_vertex = Vertex(row[0])  # creating a vertex
-            location_list.append(new_vertex) # just getting the name of the locations
+            new_vertex = Vertex({row['Destination Names']})
+            map_graph.add_vertex(new_vertex)
+            location_name_list.append(new_vertex)
+            double_name_list.append(new_vertex)
+
+
 
 
 load_distance_data('WGUPS Distance Table.csv')
+
+
+
+
+
 
 
 
