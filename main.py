@@ -153,12 +153,13 @@ def load_distance_data(filename):
             mile_values = list(row.values())
             mile_list.append(mile_values)
         print(mile_list)
-
+        count = 0
         for k, first_vertex in enumerate(location_name_list):
             for j, second_vertex in enumerate(double_name_list):
-                map_graph.add_undirected_edge(first_vertex, second_vertex, float(mile_list[k][j + 2]))
+                map_graph.add_directed_edge(first_vertex, second_vertex, float(mile_list[k][j + 2]))
                 print(first_vertex, second_vertex, mile_list[k][j + 2])
-
+                count += 1
+    print(count)
 
 load_distance_data('WGUPS Distance Table.csv')
 
