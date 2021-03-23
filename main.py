@@ -146,7 +146,7 @@ def load_distance_data(filename):
     with open(filename) as csv_file:
         distance_data = csv.DictReader(csv_file)
         for row in distance_data:
-            new_vertex = Vertex({row['Destination Names']})
+            new_vertex = Vertex({row['Addresses']})
             map_graph.add_vertex(new_vertex)
             location_name_list.append(new_vertex)
             double_name_list.append(new_vertex)
@@ -160,6 +160,7 @@ def load_distance_data(filename):
                 print(first_vertex, second_vertex, mile_list[k][j + 2])
                 count += 1
     print(count)
+
 
 load_distance_data('WGUPS Distance Table.csv')
 
