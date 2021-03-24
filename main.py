@@ -160,6 +160,27 @@ def load_distance_data(filename):
     print(count)
 
 
+# def connect_packages_with_distances(graph, hash_table):
+#     package_distance_dict = {}
+#     hash_table_items = {}
+#
+#     # start adding things from hash table into a hash_table_items dictionary with the key as dict key
+#     for z in range(len(hash_table.table)):
+#         hash_table_items[z + 1] = hash_table.search(z + 1)  # example {1: package 1}
+#
+#     hash_table_values_list = list(hash_table_items.values()) # generate a list of package objects from the values of the hash table
+#     graph_vertices_list = list(graph.adjacency_list.keys())
+#
+#     for vert in graph_vertices_list:
+#         for package in hash_table_values_list:
+#             package_distance_dict[vert] = []
+#             if str(vert.label) == str(package.address):
+#                 package_distance_dict[vert].append(package)
+#
+#     print("Package and distance dictionary:")
+#     print(package_distance_dict.items())
+
+
 def dijkstras_shortest_path_algorithm(g, starting_vertex):
     unvisited_queue = []
     for current_vertex in g.adjacency_list:
