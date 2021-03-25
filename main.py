@@ -160,25 +160,24 @@ def load_distance_data(filename):
     print(count)
 
 
-# def connect_packages_with_distances(graph, hash_table):
-#     package_distance_dict = {}
-#     hash_table_items = {}
-#
-#     # start adding things from hash table into a hash_table_items dictionary with the key as dict key
-#     for z in range(len(hash_table.table)):
-#         hash_table_items[z + 1] = hash_table.search(z + 1)  # example {1: package 1}
-#
-#     hash_table_values_list = list(hash_table_items.values()) # generate a list of package objects from the values of the hash table
-#     graph_vertices_list = list(graph.adjacency_list.keys())
-#
-#     for vert in graph_vertices_list:
-#         for package in hash_table_values_list:
-#             package_distance_dict[vert] = []
-#             if str(vert.label) == str(package.address):
-#                 package_distance_dict[vert].append(package)
-#
-#     print("Package and distance dictionary:")
-#     print(package_distance_dict.items())
+def package_distance_into_dict(hash_table):
+    from collections import defaultdict
+    package_distance_dict = defaultdict(list)
+
+    for i in range(len(hash_table.table)):
+        package_object_list = []
+        package_object_list.append(hash_table.search(i + 1).ID)
+        package_object_list.append(hash_table.search(i + 1).address)
+        package_object_list.append(hash_table.search(i + 1).city)
+        package_object_list.append(hash_table.search(i + 1).state)
+        package_object_list.append(hash_table.search(i + 1).postal)
+        package_object_list.append(hash_table.search(i + 1).deadline)
+        package_object_list.append(hash_table.search(i + 1).mass)
+        package_object_list.append(hash_table.search(i + 1).notes)
+        package_object_list.append(hash_table.search(i + 1).status)
+
+        package_distance_dict[hash_table.search(i + 1).address].append(package_object_list)
+    print(package_distance_dict.items())
 
 
 def dijkstras_shortest_path_algorithm(g, starting_vertex):
@@ -253,3 +252,4 @@ for v in map_graph.adjacency_list:
 #         print("WGU Hub to %s ==> %s (total distance: %g)" % (my_package.address, get_short_path_city(key_list[0], v),
 #                                                              v.distance))
 #     p += 1
+package_distance_into_dict(myHashTable)
