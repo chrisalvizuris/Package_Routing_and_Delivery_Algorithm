@@ -4,6 +4,11 @@ from distance import load_distance_data
 
 myHashTable = ChainingHashTable()
 
+map_graph = Graph()
+
+load_distance_data('WGUPS Distance Table.csv')
+
+key_list = list(map_graph.adjacency_list.keys())
 
 # load_package_data('WGUPS Package File.csv')
 #
@@ -54,15 +59,6 @@ myHashTable = ChainingHashTable()
 #     return path
 
 
-map_graph = Graph()
-
-
-load_distance_data('WGUPS Distance Table.csv')
-
-
-key_list = list(map_graph.adjacency_list.keys())
-
-
 # dijkstras_shortest_path_algorithm(map_graph, key_list[0])
 #
 # print("\nDijkstra's Shortest Path:")
@@ -72,14 +68,3 @@ key_list = list(map_graph.adjacency_list.keys())
 #     else:
 #         print("1 to %s ==> %s (total distance: %g)" % (v.label, get_short_path(key_list[0], v), v.distance))
 
-
-# print("\nDijkstra's Shortest Path with addresses:")
-# p = 1
-# for v in map_graph.adjacency_list:
-#     my_package = myHashTable.search(p)
-#     if v.last_vertex is None and v is not key_list[0]:
-#         print("WGU Hub to %s ==> no path exists" % my_package.address)
-#     else:
-#         print("WGU Hub to %s ==> %s (total distance: %g)" % (my_package.address, get_short_path_city(key_list[0], v),
-#                                                              v.distance))
-#     p += 1
