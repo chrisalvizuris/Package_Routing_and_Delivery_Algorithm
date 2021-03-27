@@ -1,6 +1,8 @@
 from hashTable import ChainingHashTable
 from graph import Graph
 from distance import load_distance_data
+from truck import Truck, greedy_algorithm_for_package_loading
+from readCSV import load_package_data
 
 myHashTable = ChainingHashTable()
 
@@ -10,7 +12,9 @@ load_distance_data('WGUPS Distance Table.csv')
 
 key_list = list(map_graph.adjacency_list.keys())
 
-# load_package_data('WGUPS Package File.csv')
+load_package_data('WGUPS Package File.csv')
+
+greedy_algorithm_for_package_loading(myHashTable)
 #
 # for i in range(len(myHashTable.table)):
 #     print("Key: {} and Package: {}".format(i+1, myHashTable.search(i+1)))

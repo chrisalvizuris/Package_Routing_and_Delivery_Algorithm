@@ -1,9 +1,9 @@
 import csv
 from deliveryPackage import DeliveryPackage
-from main import myHashTable
 
 
 def load_package_data(filename):
+    from main import myHashTable
     with open(filename) as csv_file:
         package_data = csv.reader(csv_file)
         next(package_data)  # skip header
