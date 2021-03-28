@@ -1,10 +1,8 @@
 from hashTable import ChainingHashTable
 from graph import Graph
 from distance import load_distance_data
-from truck import Truck, greedy_algorithm_for_package_loading
+# from truck import Truck, greedy_algorithm_for_package_loading
 from readCSV import load_package_data
-
-myHashTable = ChainingHashTable()
 
 map_graph = Graph()
 
@@ -12,13 +10,13 @@ load_distance_data('WGUPS Distance Table.csv')
 
 key_list = list(map_graph.adjacency_list.keys())
 
-load_package_data('WGUPS Package File.csv')
+myHashTable = ChainingHashTable()
 
-greedy_algorithm_for_package_loading(myHashTable)
+load_package_data('WGUPS Package File.csv')
 #
 # for i in range(len(myHashTable.table)):
 #     print("Key: {} and Package: {}".format(i+1, myHashTable.search(i+1)))
-#
+
 #
 # def dijkstras_shortest_path_algorithm(g, starting_vertex):
 #     unvisited_queue = []
