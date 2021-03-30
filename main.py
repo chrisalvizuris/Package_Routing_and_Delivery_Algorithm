@@ -5,6 +5,7 @@ from distance import load_distance_data
 from readCSV import load_package_data
 
 map_graph = Graph()
+distance_dict = {}
 
 load_distance_data('WGUPS Distance Table.csv')
 
@@ -13,6 +14,7 @@ key_list = list(map_graph.adjacency_list.keys())
 myHashTable = ChainingHashTable()
 
 load_package_data('WGUPS Package File.csv')
+
 #
 # for i in range(len(myHashTable.table)):
 #     print("Key: {} and Package: {}".format(i+1, myHashTable.search(i+1)))

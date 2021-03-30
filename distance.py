@@ -3,8 +3,9 @@ from graph import Vertex
 
 
 # load the distance data and then create a graph from it
+
 def load_distance_data(filename):
-    from main import map_graph
+    from main import map_graph, distance_dict
     # create an array to fit the names of the vertices
     location_name_list = []
     double_name_list = []
@@ -13,7 +14,7 @@ def load_distance_data(filename):
     with open(filename) as csv_file:
         distance_data = csv.DictReader(csv_file)
         for row in distance_data:
-            new_vertex = Vertex({row['Addresses']})
+            new_vertex = Vertex(str(row['Addresses']))
             map_graph.add_vertex(new_vertex)
             location_name_list.append(new_vertex)
             double_name_list.append(new_vertex)
@@ -24,8 +25,10 @@ def load_distance_data(filename):
         for k, first_vertex in enumerate(location_name_list):
             for j, second_vertex in enumerate(double_name_list):
                 map_graph.add_directed_edge(first_vertex, second_vertex, float(mile_list[k][j + 2]))
+                distance_dict[str(first_vertex.label), str(second_vertex.label)] = float(mile_list[k][j + 2])
                 print(first_vertex, second_vertex, mile_list[k][j + 2])
                 count += 1
+        print(distance_dict.items())
 
 
 # created a dictionary to pull data from package hash table. Package address is the key, and packages are in list.
@@ -47,3 +50,4 @@ def package_distance_into_dict(hash_table):
 
         package_distance_dict[hash_table.search(i + 1).address].append(package_object_list)
     print(package_distance_dict.items())
+
