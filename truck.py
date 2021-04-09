@@ -39,6 +39,39 @@ truck_2 = Truck(2, map_graph)
 truck_3 = Truck(3, map_graph)
 
 
+def nearest_neighbor_path_sort(truck):
+
+    unvisited_list = list(truck.path)
+    visited_list = []
+    optimized_path = collections.deque()
+    min_distance = 50
+    min_address = ''
+    optimized_path.append(unvisited_list[0])
+    current_address = unvisited_list[0]
+    # previous_address = ''
+    unvisited_list.remove(unvisited_list[0])
+    while unvisited_list:
+        count = None
+        for i in range(len(unvisited_list)):
+            if i in visited_list:
+                break
+            if distance_dict[current_address, unvisited_list[i]] < min_distance:
+                min_distance = distance_dict[current_address, unvisited_list[i]]
+                min_address = unvisited_list[i]
+                count = i
+        # previous_address = current_address
+        current_address = min_address
+        optimized_path.append(min_address)
+        min_distance = 50.0
+        min_address = ''
+        visited_list.append(current_address)
+        unvisited_list.remove(unvisited_list[count])
+    optimized_path.append(truck.start_location)
+    truck.path = optimized_path
+    print('Visited list:', visited_list)
+    print('Unvisited list:', unvisited_list)
+
+
 def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
 
     # determine which packages to load into a truck using a greedy algorithm
@@ -119,11 +152,15 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
     truck_1.path.appendleft(truck_1.start_location)
-    truck_1.path.append(truck_1.start_location)
+    # truck_1.path.append(truck_1.start_location)
     truck_2.path.appendleft(truck_2.start_location)
-    truck_2.path.append(truck_2.start_location)
+    # truck_2.path.append(truck_2.start_location)
     truck_3.path.appendleft(truck_3.start_location)
-    truck_3.path.append(truck_3.start_location)
+    # truck_3.path.append(truck_3.start_location)
+
+    nearest_neighbor_path_sort(truck_1)
+    nearest_neighbor_path_sort(truck_2)
+    nearest_neighbor_path_sort(truck_3)
 
     print('Truck 1 packages:')
     for i in range(len(truck_1.package_list)):
@@ -169,7 +206,6 @@ print('Truck 3 path miles:', calculate_path_miles(truck_3))
 # return the number of miles between two addresses
 def miles_between_locations(location1, location2):
     return distance_dict[location1, location2]
-
 
 
 def send_out_trucks(truck_1, truck_2, truck_3):
