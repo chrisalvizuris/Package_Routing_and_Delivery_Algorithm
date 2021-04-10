@@ -107,7 +107,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.append(hash_table.search(i + 1).address)
 
-        elif hash_table.search(i + 1).ID == 13:
+        elif '2010' in hash_table.search(i + 1).address and hash_table.search(i + 1).deadline == '10:30 AM':
             truck_2.package_list.appendleft(hash_table.search(i + 1))
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
