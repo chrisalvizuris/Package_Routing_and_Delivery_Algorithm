@@ -88,7 +88,9 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.appendleft(hash_table.search(i + 1).address)
 
-        elif hash_table.search(i + 1).ID == 27 or hash_table.search(i + 1).ID == 35:
+        elif hash_table.search(i + 1).deadline == '10:30 AM' and 'Delayed on flight' in hash_table.search(i + 1).notes \
+                and (hash_table.search(i + 1).mass == '88' or '7') and hash_table.search(i + 1) not in truck_3.package_list and \
+                hash_table.search(i + 1) not in truck_2.package_list:
             truck_1.package_list.append(hash_table.search(i + 1))
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.append(hash_table.search(i + 1).address)
@@ -99,6 +101,11 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
             truck_2.package_list.appendleft(hash_table.search(i + 1))
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
+
+        elif '1060' in hash_table.search(i + 1).address:
+            truck_2.package_list.append(hash_table.search(i + 1))
+            if hash_table.search(i + 1).address not in truck_2.path:
+                truck_2.path.append(hash_table.search(i + 1).address)
 
         elif hash_table.search(i + 1).ID == 13:
             truck_2.package_list.appendleft(hash_table.search(i + 1))
@@ -129,7 +136,8 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
 
         # truck 2 will add the delayed packages that have a deadline to the left of deque
         elif (hash_table.search(i + 1).deadline == '10:30 AM') and \
-                (hash_table.search(i + 1).notes == 'Delayed on flight---will not arrive to depot until 9:05 am'):
+                (hash_table.search(i + 1).notes == 'Delayed on flight---will not arrive to depot until 9:05 am') and \
+                hash_table.search(i + 1) not in truck_3.package_list and hash_table.search(i + 1) not in truck_1.package_list:
             if len(truck_2.package_list) < truck_2.max_packages:
                 truck_2.package_list.appendleft(hash_table.search(i + 1))
                 if hash_table.search(i + 1).address not in truck_2.path:
@@ -209,12 +217,12 @@ def miles_between_locations(location1, location2):
 
 
 def send_out_trucks(truck_1, truck_2, truck_3):
-    truck_1.time_left_hub = datetime.datetime(100, 1, 1, 8, 0, 0)
-    truck_1.time = datetime.datetime(100, 1, 1, 8, 0, 0)
-    truck_2.time_left_hub = datetime.datetime(100, 1, 1, 9, 5, 1)
-    truck_2.time = datetime.datetime(100, 1, 1, 9, 5, 1)
-    truck_3.time_left_hub = datetime.datetime(100, 1, 1, 9, 5, 1)
-    truck_3.time = datetime.datetime(100, 1, 1, 9, 5, 1)
+    truck_1.time_left_hub = datetime.datetime(100, 1, 1, 9, 5, 1)
+    truck_1.time = datetime.datetime(100, 1, 1, 9, 5, 1)
+    truck_2.time_left_hub = datetime.datetime(100, 1, 1, 8, 0, 0)
+    truck_2.time = datetime.datetime(100, 1, 1, 8, 0, 0)
+    truck_3.time_left_hub = datetime.datetime(100, 1, 1, 10, 30, 0)
+    truck_3.time = datetime.datetime(100, 1, 1, 10, 30, 0)
 
     # send out truck 1
     truck_1.path.popleft()
@@ -228,7 +236,6 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         truck_1.time = truck_1.time + minutes_added
         for package in range(len(truck_1.package_list)):
             if truck_1.package_list[package].address == truck1_path_copy[i]:
-                print('package address is equal to path')
                 truck_1.package_list[package].status = "delivered"
                 # truck_1.package_list.remove(truck_1.package_list[package])
         truck_1.current_location = truck1_path_copy[i]
