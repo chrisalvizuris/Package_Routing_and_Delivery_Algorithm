@@ -224,25 +224,32 @@ def send_out_trucks(truck_1, truck_2, truck_3):
     truck_3.time_left_hub = datetime.datetime(100, 1, 1, 10, 30, 0)
     truck_3.time = datetime.datetime(100, 1, 1, 10, 30, 0)
 
+    # update package status for each truck to be in route
+    for package in range(len(truck_1.package_list)):
+        truck_1.package_list[package].status = "In Route - Truck 1"
+
+    for package in range(len(truck_2.package_list)):
+        truck_2.package_list[package].status = "In Route - Truck 2"
+
+    for package in range(len(truck_3.package_list)):
+        truck_3.package_list[package].status = "In Route - Truck 3"
+
     # send out truck 1
     truck_1.path.popleft()
     truck1_path_copy = list(truck_1.path)
     for i, path in enumerate(truck1_path_copy):
         truck_1.distance_traveled += distance_dict[truck_1.current_location, truck1_path_copy[i]]
         distance_in_minutes = 3.33 * distance_dict[truck_1.current_location, truck1_path_copy[i]]
-        # need to add the time ... possibly need to use datetime instead of time objects
 
         minutes_added = datetime.timedelta(minutes=distance_in_minutes)
         truck_1.time = truck_1.time + minutes_added
         for package in range(len(truck_1.package_list)):
             if truck_1.package_list[package].address == truck1_path_copy[i]:
-                truck_1.package_list[package].status = "delivered"
-                # truck_1.package_list.remove(truck_1.package_list[package])
+                truck_1.package_list[package].status = "Delivered at", truck_1.time.time()
         truck_1.current_location = truck1_path_copy[i]
         print('Truck 1 path:', truck_1.path)
         truck_1.path.popleft()
         print('Truck 1 made a stop at', truck_1.time.time())
-    print('Truck 1 package list:', truck_1.package_list[1])
 
     print('')
     # send out truck 2
@@ -257,7 +264,6 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         for package in range(len(truck_2.package_list)):
             if truck_2.package_list[package].address == truck2_path_copy[i]:
                 truck_2.package_list[package].status = "delivered"
-                # truck_2.package_list.remove(package)
         truck_2.current_location = truck2_path_copy[i]
         print('Truck 2 path:', truck_2.path)
         truck_2.path.popleft()
@@ -276,7 +282,6 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         for package in range(len(truck_3.package_list)):
             if truck_3.package_list[package].address == truck3_path_copy[i]:
                 truck_3.package_list[package].status = "delivered"
-                # truck_3.package_list.remove(package)
         truck_3.current_location = truck3_path_copy[i]
         print('Truck 3 path:', truck_3.path)
         truck_3.path.popleft()
