@@ -1,9 +1,7 @@
 import collections
 import datetime
-
-# create a truck class that is initialized with data about the truck
-from graph import Vertex
-from main import map_graph, myHashTable, distance_dict
+from readCSV import myHashTable
+from distance import map_graph, distance_dict
 
 
 class Truck:
@@ -192,7 +190,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
         print(truck_3.path[i])
 
 
-greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, myHashTable)
+# greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, myHashTable)
 
 
 # calculate total path miles for a given truck
@@ -206,17 +204,8 @@ def calculate_path_miles(truck):
     return truck.path_miles
 
 
-print('Truck 1 path miles:', calculate_path_miles(truck_1))
-print('Truck 2 path miles:', calculate_path_miles(truck_2))
-print('Truck 3 path miles:', calculate_path_miles(truck_3))
-
-
-# return the number of miles between two addresses
-def miles_between_locations(location1, location2):
-    return distance_dict[location1, location2]
-
-
 def send_out_trucks(truck_1, truck_2, truck_3):
+
     truck_1.time_left_hub = datetime.datetime(2021, 4, 13, 9, 5, 1)
     truck_1.time = datetime.datetime(2021, 4, 13, 9, 5, 1)
     truck_2.time_left_hub = datetime.datetime(2021, 4, 13, 8, 0, 0)
@@ -253,7 +242,7 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         truck_1.time = truck_1.time + minutes_added
         for package in range(len(truck_1.package_list)):
             if myHashTable.search(truck_1.package_list[package]).address == truck1_path_copy[i]:
-                myHashTable.search(truck_1.package_list[package]).status = "Delivered at", truck_1.time.time()
+                myHashTable.search(truck_1.package_list[package]).status = "Delivered at " + str(truck_1.time.time())
                 myHashTable.search(truck_1.package_list[package]).time_delivered = truck_1.time.time()
         truck_1.current_location = truck1_path_copy[i]
         print('Truck 1 path:', truck_1.path)
@@ -271,7 +260,7 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         truck_2.time = truck_2.time + minutes_added
         for package in range(len(truck_2.package_list)):
             if myHashTable.search(truck_2.package_list[package]).address == truck2_path_copy[i]:
-                myHashTable.search(truck_2.package_list[package]).status = "delivered at", truck_2.time.time()
+                myHashTable.search(truck_2.package_list[package]).status = "Delivered at " + str(truck_2.time.time())
                 myHashTable.search(truck_2.package_list[package]).time_delivered = truck_2.time.time()
         truck_2.current_location = truck2_path_copy[i]
         print('Truck 2 path:', truck_2.path)
@@ -289,7 +278,7 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         truck_3.time = truck_3.time + minutes_added
         for package in range(len(truck_3.package_list)):
             if myHashTable.search(truck_3.package_list[package]).address == truck3_path_copy[i]:
-                myHashTable.search(truck_3.package_list[package]).status = "delivered at", truck_3.time.time()
+                myHashTable.search(truck_3.package_list[package]).status = "Delivered at " + str(truck_3.time.time())
                 myHashTable.search(truck_3.package_list[package]).time_delivered = truck_3.time.time()
         truck_3.current_location = truck3_path_copy[i]
         print('Truck 3 path:', truck_3.path)
@@ -297,4 +286,7 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         print('Truck 3 made a stop at', truck_3.time.time())
 
 
-send_out_trucks(truck_1, truck_2, truck_3)
+# send_out_trucks(truck_1, truck_2, truck_3)
+#
+# for i in range(1, 41):
+#     print(myHashTable.search(i))
