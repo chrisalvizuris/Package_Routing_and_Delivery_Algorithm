@@ -25,13 +25,3 @@ class Graph:
     def add_undirected_edge(self, vertex_a, vertex_b, weight=1.0):
         self.add_directed_edge(vertex_a, vertex_b, weight)
         self.add_directed_edge(vertex_b, vertex_a, weight)
-
-    # def return_edge_weights(self, label1, label2):
-    #     prev = None
-    #     curr = None
-    #     for i in range(len(self.adjacency_list)):
-    #         if self.adjacency_list[i].label == label1:
-    #             prev = i
-    #         if self.adjacency_list[i].label == label2:
-    #             curr = i
-    #     return self.edge_weights[(prev, curr)]

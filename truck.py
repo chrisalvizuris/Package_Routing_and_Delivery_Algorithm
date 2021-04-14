@@ -83,63 +83,63 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
         # truck 1 will get 9 packages
         if (hash_table.search(i + 1).deadline == '10:30 AM') and (
                 hash_table.search(i + 1).notes == '') and (hash_table.search(i + 1).ID != 13) and (hash_table.search(i + 1).ID != 34) and (
-                hash_table.search(i + 1) not in truck_3.package_list and hash_table.search(i + 1) not in truck_2.package_list):
-            truck_1.package_list.appendleft(hash_table.search(i + 1))
+                hash_table.search(i + 1).ID not in truck_3.package_list and hash_table.search(i + 1).ID not in truck_2.package_list):
+            truck_1.package_list.appendleft(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.appendleft(hash_table.search(i + 1).address)
 
         elif hash_table.search(i + 1).deadline == '10:30 AM' and 'Delayed on flight' in hash_table.search(i + 1).notes \
-                and (hash_table.search(i + 1).mass == '88' or '7') and hash_table.search(i + 1) not in truck_3.package_list and \
-                hash_table.search(i + 1) not in truck_2.package_list:
-            truck_1.package_list.append(hash_table.search(i + 1))
+                and (hash_table.search(i + 1).mass == '88' or '7') and hash_table.search(i + 1).ID not in truck_3.package_list and \
+                hash_table.search(i + 1).ID not in truck_2.package_list:
+            truck_1.package_list.append(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.append(hash_table.search(i + 1).address)
 
         # truck 2 will get 16 packages
         # 9am package will be added to truck 2
         elif hash_table.search(i + 1).deadline == '9:00 AM':
-            truck_2.package_list.appendleft(hash_table.search(i + 1))
+            truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
         elif '1060' in hash_table.search(i + 1).address:
-            truck_2.package_list.append(hash_table.search(i + 1))
+            truck_2.package_list.append(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.append(hash_table.search(i + 1).address)
 
         elif '2010' in hash_table.search(i + 1).address and hash_table.search(i + 1).deadline == '10:30 AM':
-            truck_2.package_list.appendleft(hash_table.search(i + 1))
+            truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
         # 10:30 am packages required for truck 2 will be added
         elif (hash_table.search(i + 1).deadline == '10:30 AM') and \
                 (('Must be delivered' in hash_table.search(i + 1).notes) or (hash_table.search(i + 1).ID == 34)):
-            truck_2.package_list.appendleft(hash_table.search(i + 1))
+            truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
         # packages specifically needed on truck 2 but EOD are added to the right of deque
         elif (hash_table.search(i + 1).deadline == 'EOD') and \
                 (hash_table.search(i + 1).notes == 'Can only be on truck 2'):
-            truck_2.package_list.append(hash_table.search(i + 1))
+            truck_2.package_list.append(hash_table.search(i + 1).ID)
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.append(hash_table.search(i + 1).address)
 
         # adding extra EOD packages to end of truck 2 to fill it to max capacity if they aren't already in truck 1
         elif (hash_table.search(i + 1).deadline == 'EOD') and (hash_table.search(i + 1).notes == '') and \
-                (hash_table.search(i + 1).ID >= 24) and (hash_table.search(i + 1) not in truck_1.package_list):
+                (hash_table.search(i + 1).ID >= 24) and (hash_table.search(i + 1).ID not in truck_1.package_list):
             if len(truck_2.package_list) < truck_2.max_packages:
-                truck_2.package_list.append(hash_table.search(i + 1))
+                truck_2.package_list.append(hash_table.search(i + 1).ID)
                 if hash_table.search(i + 1).address not in truck_2.path:
                     truck_2.path.append(hash_table.search(i + 1).address)
 
         # truck 2 will add the delayed packages that have a deadline to the left of deque
         elif (hash_table.search(i + 1).deadline == '10:30 AM') and \
                 (hash_table.search(i + 1).notes == 'Delayed on flight---will not arrive to depot until 9:05 am') and \
-                hash_table.search(i + 1) not in truck_3.package_list and hash_table.search(i + 1) not in truck_1.package_list:
+                hash_table.search(i + 1).ID not in truck_3.package_list and hash_table.search(i + 1).ID not in truck_1.package_list:
             if len(truck_2.package_list) < truck_2.max_packages:
-                truck_2.package_list.appendleft(hash_table.search(i + 1))
+                truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
                 if hash_table.search(i + 1).address not in truck_2.path:
                     truck_2.path.appendleft(hash_table.search(i + 1).address)
 
@@ -148,15 +148,15 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 (hash_table.search(i + 1).notes == 'Delayed on flight---will not arrive to depot until 9:05 am' or
                     hash_table.search(i + 1).notes == 'Wrong address listed'):
             if len(truck_3.package_list) < truck_3.max_packages:
-                truck_3.package_list.append(hash_table.search(i + 1))
+                truck_3.package_list.append(hash_table.search(i + 1).ID)
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
 
         # truck 3 will add the rest of the non-urgent packages that aren't already in trucks 1 and 2
         elif (hash_table.search(i + 1).deadline == 'EOD' and hash_table.search(i + 1).notes == '') and (
-                hash_table.search(i + 1) not in truck_1.package_list and hash_table.search(i + 1) not in truck_2.package_list):
+                hash_table.search(i + 1).ID not in truck_1.package_list and hash_table.search(i + 1).ID not in truck_2.package_list):
             if len(truck_3.package_list) < truck_3.max_packages:
-                truck_3.package_list.append(hash_table.search(i + 1))
+                truck_3.package_list.append(hash_table.search(i + 1).ID)
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
     truck_1.path.appendleft(truck_1.start_location)
@@ -226,16 +226,22 @@ def send_out_trucks(truck_1, truck_2, truck_3):
 
     # set time left hub for packages on each truck and update package status to in route
     for package in range(len(truck_1.package_list)):
-        truck_1.package_list[package].time_left_hub = truck_1.time_left_hub.time()
-        truck_1.package_list[package].status = "In Route - Truck 1"
+        myHashTable.search(truck_1.package_list[package]).time_left_hub = truck_1.time_left_hub.time()
+        # truck_1.package_list[package].time_left_hub = truck_1.time_left_hub.time()
+        myHashTable.search(truck_1.package_list[package]).status = "In Route - Truck 1"
+        # truck_1.package_list[package].status = "In Route - Truck 1"
 
     for package in range(len(truck_2.package_list)):
-        truck_2.package_list[package].time_left_hub = truck_2.time_left_hub.time()
-        truck_2.package_list[package].status = "In Route - Truck 2"
+        myHashTable.search(truck_2.package_list[package]).time_left_hub = truck_2.time_left_hub.time()
+        # truck_2.package_list[package].time_left_hub = truck_2.time_left_hub.time()
+        myHashTable.search(truck_2.package_list[package]).status = "In Route - Truck 2"
+        # truck_2.package_list[package].status = "In Route - Truck 2"
 
     for package in range(len(truck_3.package_list)):
-        truck_3.package_list[package].time_left_hub = truck_3.time_left_hub.time()
-        truck_3.package_list[package].status = "In Route - Truck 3"
+        myHashTable.search(truck_3.package_list[package]).time_left_hub = truck_3.time_left_hub.time()
+        # truck_3.package_list[package].time_left_hub = truck_3.time_left_hub.time()
+        myHashTable.search(truck_3.package_list[package]).status = "In Route - Truck 3"
+        # truck_3.package_list[package].status = "In Route - Truck 3"
 
     # send out truck 1
     truck_1.path.popleft()
@@ -246,9 +252,9 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         minutes_added = datetime.timedelta(minutes=distance_in_minutes)
         truck_1.time = truck_1.time + minutes_added
         for package in range(len(truck_1.package_list)):
-            if truck_1.package_list[package].address == truck1_path_copy[i]:
-                truck_1.package_list[package].status = "Delivered at", truck_1.time.time()
-                truck_1.package_list[package].time_delivered = truck_1.time.time()
+            if myHashTable.search(truck_1.package_list[package]).address == truck1_path_copy[i]:
+                myHashTable.search(truck_1.package_list[package]).status = "Delivered at", truck_1.time.time()
+                myHashTable.search(truck_1.package_list[package]).time_delivered = truck_1.time.time()
         truck_1.current_location = truck1_path_copy[i]
         print('Truck 1 path:', truck_1.path)
         truck_1.path.popleft()
@@ -264,9 +270,9 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         minutes_added = datetime.timedelta(minutes=distance_in_minutes2)
         truck_2.time = truck_2.time + minutes_added
         for package in range(len(truck_2.package_list)):
-            if truck_2.package_list[package].address == truck2_path_copy[i]:
-                truck_2.package_list[package].status = "delivered at", truck_2.time.time()
-                truck_2.package_list[package].time_delivered = truck_2.time.time()
+            if myHashTable.search(truck_2.package_list[package]).address == truck2_path_copy[i]:
+                myHashTable.search(truck_2.package_list[package]).status = "delivered at", truck_2.time.time()
+                myHashTable.search(truck_2.package_list[package]).time_delivered = truck_2.time.time()
         truck_2.current_location = truck2_path_copy[i]
         print('Truck 2 path:', truck_2.path)
         truck_2.path.popleft()
@@ -282,9 +288,9 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         minutes_added = datetime.timedelta(minutes=distance_in_minutes3)
         truck_3.time = truck_3.time + minutes_added
         for package in range(len(truck_3.package_list)):
-            if truck_3.package_list[package].address == truck3_path_copy[i]:
-                truck_3.package_list[package].status = "delivered at", truck_3.time.time()
-                truck_3.package_list[package].time_delivered = truck_3.time.time()
+            if myHashTable.search(truck_3.package_list[package]).address == truck3_path_copy[i]:
+                myHashTable.search(truck_3.package_list[package]).status = "delivered at", truck_3.time.time()
+                myHashTable.search(truck_3.package_list[package]).time_delivered = truck_3.time.time()
         truck_3.current_location = truck3_path_copy[i]
         print('Truck 3 path:', truck_3.path)
         truck_3.path.popleft()
