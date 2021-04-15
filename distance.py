@@ -3,10 +3,7 @@ from graph import Vertex, Graph
 from readCSV import myHashTable
 
 # load the distance data and then create a graph from it
-
-# def load_distance_data(filename):
-#     from main import map_graph, distance_dict
-    # create an array to fit the names of the vertices
+# create an array to fit the names of the vertices
 location_name_list = []
 double_name_list = []
 mile_list = []
@@ -22,15 +19,12 @@ with open('WGUPS Distance Table.csv') as csv_file:
         double_name_list.append(new_vertex)
         mile_values = list(row.values())
         mile_list.append(mile_values)
-    print(mile_list)
     count = 0
     for k, first_vertex in enumerate(location_name_list):
         for j, second_vertex in enumerate(double_name_list):
             map_graph.add_directed_edge(first_vertex, second_vertex, float(mile_list[k][j + 2]))
             distance_dict[str(first_vertex.label), str(second_vertex.label)] = float(mile_list[k][j + 2])
-            print(first_vertex, second_vertex, mile_list[k][j + 2])
             count += 1
-    print(distance_dict.items())
 
 
 # created a dictionary to pull data from package hash table. Package address is the key, and packages are in list.
@@ -52,4 +46,3 @@ for i in range(len(myHashTable.table)):
     package_object_list.append(myHashTable.search(i + 1).status)
 
     package_distance_dict[myHashTable.search(i + 1).address].append(package_object_list)
-print(package_distance_dict.items())

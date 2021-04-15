@@ -24,5 +24,3 @@ with open('WGUPS Package File.csv') as csv_file:
                                              package_deadline, package_weight, package_notes, package_status)
 
         myHashTable.insert(package_id, package_to_deliver)
-    for i in range(len(myHashTable.table)):
-        print("Key: {} and Package: {}".format(i + 1, myHashTable.search(i + 1)))

@@ -66,8 +66,6 @@ def nearest_neighbor_path_sort(truck):
         unvisited_list.remove(unvisited_list[count])
     optimized_path.append(truck.start_location)
     truck.path = optimized_path
-    print('Visited list:', visited_list)
-    print('Unvisited list:', unvisited_list)
 
 
 def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
@@ -158,39 +156,12 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
     truck_1.path.appendleft(truck_1.start_location)
-    # truck_1.path.append(truck_1.start_location)
     truck_2.path.appendleft(truck_2.start_location)
-    # truck_2.path.append(truck_2.start_location)
     truck_3.path.appendleft(truck_3.start_location)
-    # truck_3.path.append(truck_3.start_location)
 
     nearest_neighbor_path_sort(truck_1)
     nearest_neighbor_path_sort(truck_2)
     nearest_neighbor_path_sort(truck_3)
-
-    print('Truck 1 packages:')
-    for i in range(len(truck_1.package_list)):
-        print(truck_1.package_list[i])
-    print('Truck 1 path:')
-    for i in range(len(truck_1.path)):
-        print(truck_1.path[i])
-    print('')
-    print('Truck 2 packages:')
-    for i in range(len(truck_2.package_list)):
-        print(truck_2.package_list[i])
-    print('Truck 2 path:')
-    for i in range(len(truck_2.path)):
-        print(truck_2.path[i])
-    print('')
-    print('Truck 3 packages:')
-    for i in range(len(truck_3.package_list)):
-        print(truck_3.package_list[i])
-    print('Truck 3 path:')
-    for i in range(len(truck_3.path)):
-        print(truck_3.path[i])
-
-
-# greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, myHashTable)
 
 
 # calculate total path miles for a given truck
@@ -216,21 +187,15 @@ def send_out_trucks(truck_1, truck_2, truck_3):
     # set time left hub for packages on each truck and update package status to in route
     for package in range(len(truck_1.package_list)):
         myHashTable.search(truck_1.package_list[package]).time_left_hub = truck_1.time_left_hub.time()
-        # truck_1.package_list[package].time_left_hub = truck_1.time_left_hub.time()
-        myHashTable.search(truck_1.package_list[package]).status = "In Route - Truck 1"
-        # truck_1.package_list[package].status = "In Route - Truck 1"
+        myHashTable.search(truck_1.package_list[package]).status = "En Route - Truck 1"
 
     for package in range(len(truck_2.package_list)):
         myHashTable.search(truck_2.package_list[package]).time_left_hub = truck_2.time_left_hub.time()
-        # truck_2.package_list[package].time_left_hub = truck_2.time_left_hub.time()
-        myHashTable.search(truck_2.package_list[package]).status = "In Route - Truck 2"
-        # truck_2.package_list[package].status = "In Route - Truck 2"
+        myHashTable.search(truck_2.package_list[package]).status = "En Route - Truck 2"
 
     for package in range(len(truck_3.package_list)):
         myHashTable.search(truck_3.package_list[package]).time_left_hub = truck_3.time_left_hub.time()
-        # truck_3.package_list[package].time_left_hub = truck_3.time_left_hub.time()
-        myHashTable.search(truck_3.package_list[package]).status = "In Route - Truck 3"
-        # truck_3.package_list[package].status = "In Route - Truck 3"
+        myHashTable.search(truck_3.package_list[package]).status = "En Route - Truck 3"
 
     # send out truck 1
     truck_1.path.popleft()
@@ -243,13 +208,10 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         for package in range(len(truck_1.package_list)):
             if myHashTable.search(truck_1.package_list[package]).address == truck1_path_copy[i]:
                 myHashTable.search(truck_1.package_list[package]).status = "Delivered at " + str(truck_1.time.time())
-                myHashTable.search(truck_1.package_list[package]).time_delivered = truck_1.time.time()
+                myHashTable.search(truck_1.package_list[package]).time_delivered = truck_1.time.time().strftime('%H:%M:%S')
         truck_1.current_location = truck1_path_copy[i]
-        print('Truck 1 path:', truck_1.path)
         truck_1.path.popleft()
-        print('Truck 1 made a stop at', truck_1.time.time())
 
-    print('')
     # send out truck 2
     truck_2.path.popleft()
     truck2_path_copy = list(truck_2.path)
@@ -261,13 +223,10 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         for package in range(len(truck_2.package_list)):
             if myHashTable.search(truck_2.package_list[package]).address == truck2_path_copy[i]:
                 myHashTable.search(truck_2.package_list[package]).status = "Delivered at " + str(truck_2.time.time())
-                myHashTable.search(truck_2.package_list[package]).time_delivered = truck_2.time.time()
+                myHashTable.search(truck_2.package_list[package]).time_delivered = truck_2.time.time().strftime('%H:%M:%S')
         truck_2.current_location = truck2_path_copy[i]
-        print('Truck 2 path:', truck_2.path)
         truck_2.path.popleft()
-        print('Truck 2 made a stop at', truck_2.time.time())
 
-    print('')
     # send out truck 3
     truck_3.path.popleft()
     truck3_path_copy = list(truck_3.path)
@@ -279,14 +238,6 @@ def send_out_trucks(truck_1, truck_2, truck_3):
         for package in range(len(truck_3.package_list)):
             if myHashTable.search(truck_3.package_list[package]).address == truck3_path_copy[i]:
                 myHashTable.search(truck_3.package_list[package]).status = "Delivered at " + str(truck_3.time.time())
-                myHashTable.search(truck_3.package_list[package]).time_delivered = truck_3.time.time()
+                myHashTable.search(truck_3.package_list[package]).time_delivered = truck_3.time.time().strftime('%H:%M:%S')
         truck_3.current_location = truck3_path_copy[i]
-        print('Truck 3 path:', truck_3.path)
         truck_3.path.popleft()
-        print('Truck 3 made a stop at', truck_3.time.time())
-
-
-# send_out_trucks(truck_1, truck_2, truck_3)
-#
-# for i in range(1, 41):
-#     print(myHashTable.search(i))
