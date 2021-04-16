@@ -1,14 +1,36 @@
 # Create the hash table class with chaining
+"""
+Create a custom hash table with methods to use the object (insert, search, delete). This will be used to store the
+packages and later retrieve specific data.
+"""
+
+
 class ChainingHashTable:
-    # Create a constructor
     def __init__(self, initial_capacity=40):
-        # initialize the hash table with empty bucket list entries
+        """
+        O(N)
+
+        This constructor will initialize the hash table with empty bucket list. This will be an array of arrays.
+
+        :param initial_capacity: The initial capacity is set to 40 because that is the number of packages in the csv
+        """
         self.table = []
         for i in range(initial_capacity):
             self.table.append([])
 
-    # insert a new item or update existing to the hash table
     def insert(self, key, item):
+        """
+        O(N)
+
+        This function will let us insert items into the hash table. It will take in a key and then the item being
+        inserted. If the item is already in the hash table, it will update that item.
+
+        The key will get hashed using the modulo of the table size.
+
+        :param key: The key used to hash. This will be the package ID
+        :param item: The package being inserted into the hash table
+        :return: Returns True if something has been inserted.
+        """
         # get the bucket list where this item will go
         bucket = hash(key) % len(self.table)
         bucket_list = self.table[bucket]
@@ -21,9 +43,15 @@ class ChainingHashTable:
         bucket_list.append(key_value)
         return True
 
-    # searches for item with matching key in hash table
-    # returns the item if found or None if not found
     def search(self, key):
+        """
+        O(N)
+
+        This function searches for item with matching key in hash table and returns the value (similar to a dictionary)
+
+        :param key: The package ID
+        :return: Return's the package object being searched or None
+        """
         # get the bucket list where this item would be
         bucket = hash(key) % len(self.table)
         bucket_list = self.table[bucket]
@@ -36,8 +64,15 @@ class ChainingHashTable:
             else:
                 return None
 
-    # removes the item with matching key from the hash table
     def remove(self, key):
+        """
+        O(N)
+
+        This function removes the item with matching key from the hash table.
+
+        :param key: The package ID
+        :return: Does not return anything.
+        """
         # get the bucket list where this item will be removed from
         bucket = hash(key) % len(self.table)
         bucket_list = self.table[bucket]
