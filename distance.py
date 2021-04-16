@@ -2,8 +2,19 @@ import csv
 from graph import Vertex, Graph
 from readCSV import myHashTable
 
-# load the distance data and then create a graph from it
-# create an array to fit the names of the vertices
+
+"""
+O(N^2)
+
+Reads the 'WGUPS Distance Table.csv' file and adds it to a graph object, called map_graph.
+
+I create Vertices of each location and add those to the graph.
+
+I create a dictionary of the superset for the locations. Two locations will be the key of the dictionary (distance_dict)
+and the value is the distance between those two destinations.
+
+Since the algorithm iterates over two for loops, it is O(N^2).
+"""
 location_name_list = []
 double_name_list = []
 mile_list = []
@@ -20,6 +31,7 @@ with open('WGUPS Distance Table.csv') as csv_file:
         mile_values = list(row.values())
         mile_list.append(mile_values)
     count = 0
+    # Start iterating through two lists of addresses and use those as the keys for the dictionary
     for k, first_vertex in enumerate(location_name_list):
         for j, second_vertex in enumerate(double_name_list):
             map_graph.add_directed_edge(first_vertex, second_vertex, float(mile_list[k][j + 2]))
@@ -27,8 +39,11 @@ with open('WGUPS Distance Table.csv') as csv_file:
             count += 1
 
 
-# created a dictionary to pull data from package hash table. Package address is the key, and packages are in list.
-# def package_distance_into_dict(hash_table):
+"""
+O(N)
+
+Created a dictionary to pull data from package hash table. Package address is the key, and packages are in list.
+"""
 from collections import defaultdict
 
 package_distance_dict = defaultdict(list)

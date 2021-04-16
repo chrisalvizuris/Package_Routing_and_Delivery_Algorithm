@@ -57,12 +57,8 @@ class Main:
                 print('*' * 100)
                 print('*' * 100)
                 menu_prompt = input(input_prompt)
-            except IndexError:
-                print(IndexError)
-                exit()
             except ValueError:
                 print("Invalid time entry")
                 menu_prompt = input(input_prompt)
-        elif menu_prompt == 'X':
-            exit()
+
     exit()

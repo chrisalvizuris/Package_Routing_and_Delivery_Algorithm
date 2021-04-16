@@ -2,9 +2,13 @@ import csv
 from deliveryPackage import DeliveryPackage
 from hashTable import ChainingHashTable
 
+"""
+O(N)
 
-# def load_package_data(filename):
+Reads the 'WGUPS Package File.csv' file and adds each package into a ChainingHashTable object, called myHashTable.
 
+I set the package's status to 'At the hub'.
+"""
 with open('WGUPS Package File.csv') as csv_file:
     package_data = csv.reader(csv_file)
     myHashTable = ChainingHashTable()
