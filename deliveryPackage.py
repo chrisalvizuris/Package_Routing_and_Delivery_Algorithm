@@ -38,6 +38,7 @@ class DeliveryPackage:
         self.status = status
         self.time_delivered = datetime.datetime(1, 1, 1, 1, 1, 1)
         self.time_left_hub = datetime.datetime(1, 1, 1, 1, 1, 1)
+        self.truck = ""
 
     def __str__(self):
         """

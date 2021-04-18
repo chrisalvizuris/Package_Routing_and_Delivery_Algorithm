@@ -1,3 +1,6 @@
+# Name: Christian Alvizuris
+# Student ID: 000952579
+
 import datetime
 from truck import truck_1, truck_2, truck_3, greedy_algorithm_for_package_loading, send_out_trucks, calculate_path_miles
 from readCSV import myHashTable
@@ -65,17 +68,19 @@ class Main:
                         time_delivered_converted = time_conversion(str(time_delivered))
                         delivery_address = myHashTable.search(i + 1).address
                         delivery_deadline = myHashTable.search(i + 1).deadline
+                        package_notes = myHashTable.search(i + 1).notes
+                        package_truck = myHashTable.search(i + 1).truck
                     except ValueError:
                         pass
                     if time_left_converted >= converted_user_time:
                         delivery_status = 'Delivery Status: At the Hub, leaving at ' + str(time_left)
                     elif time_left_converted < converted_user_time:
                         if converted_user_time < time_delivered_converted:
-                            delivery_status = 'Delivery Status: Package Currently En Route'
+                            delivery_status = 'Delivery Status: Package Currently En Route on ' + package_truck
                         else:
-                            delivery_status = 'Delivery Status: Package Delivered at ' + str(time_delivered)
+                            delivery_status = 'Delivery Status: Package Delivered at ' + str(time_delivered) + ' on ' + package_truck
 
-                    print('Package ID: ' + str(i + 1) + ', Address: ' + delivery_address + ', Deadline: ' +
+                    print('Package ID: ' + str(i + 1) + ', Address: ' + delivery_address + ', Notes: ' + package_notes + ', Deadline: ' +
                           delivery_deadline + ', ' + delivery_status)
 
                 print('Complete!\n\n')

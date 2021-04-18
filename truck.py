@@ -120,6 +120,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 hash_table.search(i + 1).notes == '') and (hash_table.search(i + 1).ID != 13) and (hash_table.search(i + 1).ID != 34) and (
                 hash_table.search(i + 1).ID not in truck_3.package_list and hash_table.search(i + 1).ID not in truck_2.package_list):
             truck_1.package_list.appendleft(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 1"
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.appendleft(hash_table.search(i + 1).address)
 
@@ -127,6 +128,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 and (hash_table.search(i + 1).mass == '88' or '7') and hash_table.search(i + 1).ID not in truck_3.package_list and \
                 hash_table.search(i + 1).ID not in truck_2.package_list:
             truck_1.package_list.append(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 1"
             if hash_table.search(i + 1).address not in truck_1.path:
                 truck_1.path.append(hash_table.search(i + 1).address)
 
@@ -134,16 +136,19 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
         # 9am package will be added to truck 2
         elif hash_table.search(i + 1).deadline == '9:00 AM':
             truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 2"
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
         elif '1060' in hash_table.search(i + 1).address:
             truck_2.package_list.append(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 2"
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.append(hash_table.search(i + 1).address)
 
         elif '2010' in hash_table.search(i + 1).address and hash_table.search(i + 1).deadline == '10:30 AM':
             truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 2"
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
@@ -151,6 +156,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
         elif (hash_table.search(i + 1).deadline == '10:30 AM') and \
                 (('Must be delivered' in hash_table.search(i + 1).notes) or (hash_table.search(i + 1).ID == 34)):
             truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 2"
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.appendleft(hash_table.search(i + 1).address)
 
@@ -158,6 +164,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
         elif (hash_table.search(i + 1).deadline == 'EOD') and \
                 (hash_table.search(i + 1).notes == 'Can only be on truck 2'):
             truck_2.package_list.append(hash_table.search(i + 1).ID)
+            hash_table.search(i + 1).truck = "Truck 2"
             if hash_table.search(i + 1).address not in truck_2.path:
                 truck_2.path.append(hash_table.search(i + 1).address)
 
@@ -166,6 +173,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 (hash_table.search(i + 1).ID >= 24) and (hash_table.search(i + 1).ID not in truck_1.package_list):
             if len(truck_2.package_list) < truck_2.max_packages:
                 truck_2.package_list.append(hash_table.search(i + 1).ID)
+                hash_table.search(i + 1).truck = "Truck 2"
                 if hash_table.search(i + 1).address not in truck_2.path:
                     truck_2.path.append(hash_table.search(i + 1).address)
 
@@ -175,6 +183,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 hash_table.search(i + 1).ID not in truck_3.package_list and hash_table.search(i + 1).ID not in truck_1.package_list:
             if len(truck_2.package_list) < truck_2.max_packages:
                 truck_2.package_list.appendleft(hash_table.search(i + 1).ID)
+                hash_table.search(i + 1).truck = "Truck 2"
                 if hash_table.search(i + 1).address not in truck_2.path:
                     truck_2.path.appendleft(hash_table.search(i + 1).address)
 
@@ -184,6 +193,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                     hash_table.search(i + 1).notes == 'Wrong address listed'):
             if len(truck_3.package_list) < truck_3.max_packages:
                 truck_3.package_list.append(hash_table.search(i + 1).ID)
+                hash_table.search(i + 1).truck = "Truck 3"
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
 
@@ -192,6 +202,7 @@ def greedy_algorithm_for_package_loading(truck_1, truck_2, truck_3, hash_table):
                 hash_table.search(i + 1).ID not in truck_1.package_list and hash_table.search(i + 1).ID not in truck_2.package_list):
             if len(truck_3.package_list) < truck_3.max_packages:
                 truck_3.package_list.append(hash_table.search(i + 1).ID)
+                hash_table.search(i + 1).truck = "Truck 3"
                 if hash_table.search(i + 1).address not in truck_3.path:
                     truck_3.path.append(hash_table.search(i + 1).address)
     truck_1.path.appendleft(truck_1.start_location)
