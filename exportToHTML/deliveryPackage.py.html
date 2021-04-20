@@ -1,0 +1,75 @@
+<html>
+<head>
+<title>deliveryPackage.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+deliveryPackage.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">datetime</span>
+
+<span class="s2">&quot;&quot;&quot; 
+This is the class for the delivery packages. The packages are pulled from the 'WGUPS Package File.csv' file. They will 
+be later moved onto the trucks and sent out for delivery. 
+ 
+Each package has important attributes, such as the address it is going, the ID, the delivery deadline, special notes,  
+delivery status, time it was actually delivered, and time that it left the hub. 
+&quot;&quot;&quot;</span>
+
+
+<span class="s0">class </span><span class="s1">DeliveryPackage:</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">ID</span><span class="s0">, </span><span class="s1">address</span><span class="s0">, </span><span class="s1">city</span><span class="s0">, </span><span class="s1">state</span><span class="s0">, </span><span class="s1">postal</span><span class="s0">, </span><span class="s1">deadline</span><span class="s0">, </span><span class="s1">mass</span><span class="s0">, </span><span class="s1">notes</span><span class="s0">, </span><span class="s1">status):</span>
+        <span class="s3">&quot;&quot;&quot; 
+        O(1) 
+ 
+        The constructor for the package takes in a lot of important attributes, which are pulled from the previously 
+        mentioned csv file. 
+ 
+        :param ID: Package ID 
+        :param address: Address where the package needs to be delivered to 
+        :param city: The city of the address 
+        :param state: The state of the address 
+        :param postal: The address' postal code 
+        :param deadline: The delivery deadline (datetime). Package must be delivered before the deadline. 
+        :param mass: The weight of the package. 
+        :param notes: Special notes (eg. Truck requirements, address changes, etc) 
+        :param status: The delivery status (en route, delivered, at the hub) 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self.ID = ID</span>
+        <span class="s1">self.address = address</span>
+        <span class="s1">self.city = city</span>
+        <span class="s1">self.state = state</span>
+        <span class="s1">self.postal = postal</span>
+        <span class="s1">self.deadline = deadline</span>
+        <span class="s1">self.mass = mass</span>
+        <span class="s1">self.notes = notes</span>
+        <span class="s1">self.status = status</span>
+        <span class="s1">self.time_delivered = datetime.datetime(</span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">self.time_left_hub = datetime.datetime(</span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">self.truck = </span><span class="s2">&quot;&quot;</span>
+
+    <span class="s0">def </span><span class="s1">__str__(self):</span>
+        <span class="s3">&quot;&quot;&quot; 
+        O(1) 
+ 
+        This formats the package when it is printed as a string. 
+ 
+        :return: Returns the properly formatted string separated with comas 
+        &quot;&quot;&quot;</span>
+        <span class="s0">return </span><span class="s2">&quot;%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s&quot; </span><span class="s1">% (self.ID</span><span class="s0">, </span><span class="s1">self.address</span><span class="s0">, </span><span class="s1">self.city</span><span class="s0">, </span><span class="s1">self.state</span><span class="s0">, </span><span class="s1">self.postal</span><span class="s0">,</span>
+                                                       <span class="s1">self.deadline</span><span class="s0">, </span><span class="s1">self.mass</span><span class="s0">, </span><span class="s1">self.notes</span><span class="s0">, </span><span class="s1">self.status</span><span class="s0">,</span>
+                                                               <span class="s1">self.time_delivered</span><span class="s0">, </span><span class="s1">self.time_left_hub)</span>
+
+</pre>
+</body>
+</html>

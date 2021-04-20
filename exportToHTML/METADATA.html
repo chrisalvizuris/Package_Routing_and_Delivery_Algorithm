@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>METADATA</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+METADATA</font>
+</center></td></tr></table>
+<pre><span class="s0">Metadata-Version: 2.1</span>
+<span class="s0">Name: setuptools</span>
+<span class="s0">Version: 54.1.2</span>
+<span class="s0">Summary: Easily download, build, install, upgrade, and uninstall Python packages</span>
+<span class="s0">Home-page: https://github.com/pypa/setuptools</span>
+<span class="s0">Author: Python Packaging Authority</span>
+<span class="s0">Author-email: distutils-sig@python.org</span>
+<span class="s0">License: UNKNOWN</span>
+<span class="s0">Project-URL: Documentation, https://setuptools.readthedocs.io/</span>
+<span class="s0">Keywords: CPAN PyPI distutils eggs package management</span>
+<span class="s0">Platform: UNKNOWN</span>
+<span class="s0">Classifier: Development Status :: 5 - Production/Stable</span>
+<span class="s0">Classifier: Intended Audience :: Developers</span>
+<span class="s0">Classifier: License :: OSI Approved :: MIT License</span>
+<span class="s0">Classifier: Programming Language :: Python :: 3</span>
+<span class="s0">Classifier: Programming Language :: Python :: 3 :: Only</span>
+<span class="s0">Classifier: Topic :: Software Development :: Libraries :: Python Modules</span>
+<span class="s0">Classifier: Topic :: System :: Archiving :: Packaging</span>
+<span class="s0">Classifier: Topic :: System :: Systems Administration</span>
+<span class="s0">Classifier: Topic :: Utilities</span>
+<span class="s0">Requires-Python: &gt;=3.6</span>
+<span class="s0">Provides-Extra: certs</span>
+<span class="s0">Requires-Dist: certifi (==2016.9.26) ; extra == 'certs'</span>
+<span class="s0">Provides-Extra: docs</span>
+<span class="s0">Requires-Dist: sphinx ; extra == 'docs'</span>
+<span class="s0">Requires-Dist: jaraco.packaging (&gt;=8.2) ; extra == 'docs'</span>
+<span class="s0">Requires-Dist: rst.linker (&gt;=1.9) ; extra == 'docs'</span>
+<span class="s0">Requires-Dist: sphinx-inline-tabs ; extra == 'docs'</span>
+<span class="s0">Requires-Dist: pygments-github-lexers (==0.0.5) ; extra == 'docs'</span>
+<span class="s0">Provides-Extra: ssl</span>
+<span class="s0">Requires-Dist: wincertstore (==0.2) ; (sys_platform == &quot;win32&quot;) and extra == 'ssl'</span>
+<span class="s0">Provides-Extra: testing</span>
+<span class="s0">Requires-Dist: pytest (&gt;=4.6) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-checkdocs (&gt;=2.4) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-flake8 ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-cov ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-enabler (&gt;=1.0.1) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: mock ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: flake8-2020 ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: virtualenv (&gt;=13.0.0) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-virtualenv (&gt;=1.2.7) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: wheel ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: paver ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pip (&gt;=19.1) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: jaraco.envs ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-xdist ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: sphinx ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: jaraco.path (&gt;=3.2.0) ; extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-black (&gt;=0.3.7) ; (platform_python_implementation != &quot;PyPy&quot; and python_version &lt; &quot;3.10&quot;) and extra == 'testing'</span>
+<span class="s0">Requires-Dist: pytest-mypy ; (platform_python_implementation != &quot;PyPy&quot; and python_version &lt; &quot;3.10&quot;) and extra == 'testing'</span>
+
+<span class="s0">.. image:: https://img.shields.io/pypi/v/setuptools.svg</span>
+   <span class="s0">:target: `PyPI link`_</span>
+
+<span class="s0">.. image:: https://img.shields.io/pypi/pyversions/setuptools.svg</span>
+   <span class="s0">:target: `PyPI link`_</span>
+
+<span class="s0">.. _PyPI link: https://pypi.org/project/setuptools</span>
+
+<span class="s0">.. image:: https://github.com/pypa/setuptools/workflows/tests/badge.svg</span>
+   <span class="s0">:target: https://github.com/pypa/setuptools/actions?query=workflow%3A%22tests%22</span>
+   <span class="s0">:alt: tests</span>
+
+<span class="s0">.. image:: https://img.shields.io/badge/code%20style-black-000000.svg</span>
+   <span class="s0">:target: https://github.com/psf/black</span>
+   <span class="s0">:alt: Code style: Black</span>
+
+<span class="s0">.. image:: https://img.shields.io/readthedocs/setuptools/latest.svg</span>
+    <span class="s0">:target: https://setuptools.readthedocs.io</span>
+
+<span class="s0">.. image:: https://img.shields.io/codecov/c/github/pypa/setuptools/master.svg?logo=codecov&amp;logoColor=white</span>
+   <span class="s0">:target: https://codecov.io/gh/pypa/setuptools</span>
+
+<span class="s0">.. image:: https://tidelift.com/badges/github/pypa/setuptools?style=flat</span>
+   <span class="s0">:target: https://tidelift.com/subscription/pkg/pypi-setuptools?utm_source=pypi-setuptools&amp;utm_medium=readme</span>
+
+<span class="s0">See the `Installation Instructions</span>
+<span class="s0">&lt;https://packaging.python.org/installing/&gt;`_ in the Python Packaging</span>
+<span class="s0">User's Guide for instructions on installing, upgrading, and uninstalling</span>
+<span class="s0">Setuptools.</span>
+
+<span class="s0">Questions and comments should be directed to the `distutils-sig</span>
+<span class="s0">mailing list &lt;http://mail.python.org/pipermail/distutils-sig/&gt;`_.</span>
+<span class="s0">Bug reports and especially tested patches may be</span>
+<span class="s0">submitted directly to the `bug tracker</span>
+<span class="s0">&lt;https://github.com/pypa/setuptools/issues&gt;`_.</span>
+
+
+<span class="s0">Code of Conduct</span>
+<span class="s0">===============</span>
+
+<span class="s0">Everyone interacting in the setuptools project's codebases, issue trackers,</span>
+<span class="s0">chat rooms, and mailing lists is expected to follow the</span>
+<span class="s0">`PSF Code of Conduct &lt;https://github.com/pypa/.github/blob/main/CODE_OF_CONDUCT.md&gt;`_.</span>
+
+
+<span class="s0">For Enterprise</span>
+<span class="s0">==============</span>
+
+<span class="s0">Available as part of the Tidelift Subscription.</span>
+
+<span class="s0">Setuptools and the maintainers of thousands of other packages are working with Tidelift to deliver one enterprise subscription that covers all of the open source you use.</span>
+
+<span class="s0">`Learn more &lt;https://tidelift.com/subscription/pkg/pypi-setuptools?utm_source=pypi-setuptools&amp;utm_medium=referral&amp;utm_campaign=github&gt;`_.</span>
+
+
+<span class="s0">Security Contact</span>
+<span class="s0">================</span>
+
+<span class="s0">To report a security vulnerability, please use the</span>
+<span class="s0">`Tidelift security contact &lt;https://tidelift.com/security&gt;`_.</span>
+<span class="s0">Tidelift will coordinate the fix and disclosure.</span>
+
+
+</pre>
+</body>
+</html>

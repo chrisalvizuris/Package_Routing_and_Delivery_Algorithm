@@ -1,6 +1,6 @@
 # Create the hash table class with chaining
 """
-Create a custom hash table with methods to use the object (insert, search, delete). This will be used to store the
+Create a custom hash table with methods to use the object (insert, search, delete, update). This will be used to store the
 packages and later retrieve specific data.
 """
 
@@ -20,10 +20,10 @@ class ChainingHashTable:
 
     def insert(self, key, item):
         """
-        O(N)
+        O(1)
 
         This function will let us insert items into the hash table. It will take in a key and then the item being
-        inserted. If the item is already in the hash table, it will update that item.
+        inserted.
 
         The key will get hashed using the modulo of the table size.
 
@@ -35,10 +35,10 @@ class ChainingHashTable:
         bucket = hash(key) % len(self.table)
         bucket_list = self.table[bucket]
         # insert the item to the end of the bucket list
-        for kv in bucket_list:
-            if kv[0] == key:
-                kv[1] = item
-                return True
+        # for kv in bucket_list:
+        #     if kv[0] == key:
+        #         kv[1] = item
+        #         return True
         key_value = [key, item]
         bucket_list.append(key_value)
         return True
@@ -82,3 +82,21 @@ class ChainingHashTable:
 
             if key_value_pair[0] == key:
                 bucket_list.remove([key_value_pair[0], key_value_pair[1]])
+
+    def update(self, key, item):
+        """
+        O(N)
+        This function searches for the key in the parameter and then updates the item with the item being passed.
+
+        :param key: Key of the item in the hash table
+        :param item: Item that will replace the existing item
+        :return: Returns true.
+        """
+        bucket = hash(key) % len(self.table)
+        bucket_list = self.table[bucket]
+
+        for key_value_pair in bucket_list:
+
+            if key_value_pair[0] == key:
+                key_value_pair[1] = item
+                return True

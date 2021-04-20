@@ -1,0 +1,339 @@
+<html>
+<head>
+<title>truck.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.s5 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+truck.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">collections</span>
+<span class="s0">import </span><span class="s1">datetime</span>
+<span class="s0">from </span><span class="s1">readCSV </span><span class="s0">import </span><span class="s1">myHashTable</span>
+<span class="s0">from </span><span class="s1">distance </span><span class="s0">import </span><span class="s1">map_graph</span><span class="s0">, </span><span class="s1">distance_dict</span>
+
+
+<span class="s0">class </span><span class="s1">Truck:</span>
+    <span class="s2">&quot;&quot;&quot; 
+    The truck class takes in an ID and a graph. The graph (which is created from the graph class on graph.py) will later 
+    be used to help plot out and calculate the path that the truck drives on. 
+ 
+    Location: 
+    Every truck's starting and current location will be set to the Hub's address. 
+ 
+    Truck Speed: 
+    Each truck travels at a constant speed of 18 MPH 
+ 
+    Packages: 
+    Each truck can carry a maximum of 16 packages. The package IDs will be stored as a list in the package_list. These 
+    can be used when referencing the hash table that was created. 
+ 
+    Path: 
+    Each truck has a path that it can travel. This will be a container that stores addresses only. 
+ 
+    Time: 
+    Each truck has initial time and scheduled departure time, which are both set to April 13th 2021 at 01:01:01 am 
+ 
+    &quot;&quot;&quot;</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">Id</span><span class="s0">, </span><span class="s1">graph):</span>
+        <span class="s1">self.Id = Id</span>
+        <span class="s1">self.graph = graph</span>
+        <span class="s1">self.start_location = </span><span class="s3">'4001 South 700 East'</span>
+        <span class="s1">self.current_location = </span><span class="s3">'4001 South 700 East'</span>
+        <span class="s1">self.previous_location = </span><span class="s0">None</span>
+        <span class="s1">self.mph = </span><span class="s4">18.0</span>
+        <span class="s1">self.max_packages = </span><span class="s4">16</span>
+        <span class="s1">self.time = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">self.time_left_hub = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">self.package_list = collections.deque()</span>
+        <span class="s1">self.path = collections.deque()</span>
+        <span class="s1">self.distance_traveled = </span><span class="s4">0.0</span>
+        <span class="s1">self.path_miles = </span><span class="s4">0.0</span>
+
+
+<span class="s3">&quot;&quot;&quot; 
+Initialize three trucks with a graph object. These trucks are what we'll be using to run this program. 
+&quot;&quot;&quot;</span>
+<span class="s1">truck_1 = Truck(</span><span class="s4">1</span><span class="s0">, </span><span class="s1">map_graph)</span>
+<span class="s1">truck_2 = Truck(</span><span class="s4">2</span><span class="s0">, </span><span class="s1">map_graph)</span>
+<span class="s1">truck_3 = Truck(</span><span class="s4">3</span><span class="s0">, </span><span class="s1">map_graph)</span>
+
+
+<span class="s0">def </span><span class="s1">nearest_neighbor_path_sort(truck):</span>
+    <span class="s2">&quot;&quot;&quot; 
+    O(n^2). 
+ 
+    This function uses the nearest neighbor methodology to sort the truck's path. The truck's path was initially set 
+    when the packages were loaded onto the truck, but this algorithm will sort the path based on the next nearest 
+    location from the truck's current location. 
+ 
+    To keep track of where the truck has been and where the truck still needs to go, I've created two lists (unvisited 
+    and visited addresses). 
+ 
+    :param truck: This function takes in a truck object. I'll later use this function with the 3 truck objects I created. 
+    :return: This function doesn't return anything. It just sorts the delivery path that is already in the truck. 
+    &quot;&quot;&quot;</span>
+    <span class="s1">unvisited_list = list(truck.path)  </span><span class="s5"># This unvisited list is a list version of the existing truck's path</span>
+    <span class="s1">visited_list = []  </span><span class="s5"># An empty list that will start to get populated as the truck visits locations on the unvisited list</span>
+    <span class="s1">optimized_path = collections.deque()  </span><span class="s5"># This dequeue will be later used to initialize a final list to the truck's path</span>
+    <span class="s1">min_distance = </span><span class="s4">50  </span><span class="s5"># just an arbitrary number to start with</span>
+    <span class="s1">min_address = </span><span class="s3">''</span>
+    <span class="s1">optimized_path.append(unvisited_list[</span><span class="s4">0</span><span class="s1">])</span>
+    <span class="s1">current_address = unvisited_list[</span><span class="s4">0</span><span class="s1">]</span>
+    <span class="s1">unvisited_list.remove(unvisited_list[</span><span class="s4">0</span><span class="s1">])</span>
+    <span class="s5"># iterate through the unvisited list until it is empty. When this list is empty, the visited list should be full.</span>
+    <span class="s0">while </span><span class="s1">unvisited_list:</span>
+        <span class="s1">count = </span><span class="s0">None</span>
+        <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(len(unvisited_list)):</span>
+            <span class="s0">if </span><span class="s1">i </span><span class="s0">in </span><span class="s1">visited_list:</span>
+                <span class="s0">break</span>
+            <span class="s0">if </span><span class="s1">distance_dict[current_address</span><span class="s0">, </span><span class="s1">unvisited_list[i]] &lt; min_distance:</span>
+                <span class="s1">min_distance = distance_dict[current_address</span><span class="s0">, </span><span class="s1">unvisited_list[i]]</span>
+                <span class="s1">min_address = unvisited_list[i]</span>
+                <span class="s1">count = i</span>
+        <span class="s1">current_address = min_address</span>
+        <span class="s1">optimized_path.append(min_address)</span>
+        <span class="s1">min_distance = </span><span class="s4">50.0</span>
+        <span class="s1">min_address = </span><span class="s3">''</span>
+        <span class="s1">visited_list.append(current_address)</span>
+        <span class="s1">unvisited_list.remove(unvisited_list[count])</span>
+    <span class="s1">optimized_path.append(truck.start_location)</span>
+    <span class="s1">truck.path = optimized_path</span>
+
+
+<span class="s0">def </span><span class="s1">greedy_algorithm_for_package_loading(truck_1</span><span class="s0">, </span><span class="s1">truck_2</span><span class="s0">, </span><span class="s1">truck_3</span><span class="s0">, </span><span class="s1">hash_table):</span>
+    <span class="s2">&quot;&quot;&quot; 
+    O(N^2), because it runs the nearest neighbor algorithm. 
+ 
+    This algorithm uses the greedy algorithm to load the packages on trucks based on a variety of conditions. 
+ 
+    The algorithm grabs the addresses from each package and adds that address to the truck's path if it isn't already. 
+ 
+    At the end of this function, I call the Nearest Neighbor algorithm to sort the Truck's path after all 
+    packages have been loaded. 
+ 
+    :param truck_1: Takes in a truck object. I'll use Truck with ID 1 here 
+    :param truck_2: Takes in a truck object. I'll use Truck with ID 2 here 
+    :param truck_3: Takes in a truck object. I'll use Truck with ID 3 here 
+    :param hash_table: Take in the hash table that I created - myHashTable 
+    :return: Returns nothing. It just runs the algorithm for the truck's package list 
+    &quot;&quot;&quot;</span>
+    <span class="s5"># determine which packages to load into a truck using a greedy algorithm</span>
+    <span class="s5"># add to path for each truck at the end of each if statement</span>
+    <span class="s5"># iterate through the package hash</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">package </span><span class="s0">in </span><span class="s1">enumerate(hash_table.table):</span>
+
+        <span class="s5"># starting going through each package and requirements</span>
+        <span class="s5"># truck 1 will get 9 packages</span>
+        <span class="s0">if </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'10:30 AM'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">''</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID != </span><span class="s4">13</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID != </span><span class="s4">34</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_3.package_list </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_2.package_list):</span>
+            <span class="s1">truck_1.package_list.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 1&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_1.path:</span>
+                <span class="s1">truck_1.path.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s0">elif </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'10:30 AM' </span><span class="s0">and </span><span class="s3">'Delayed on flight' </span><span class="s0">in </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes \</span>
+                <span class="s0">and </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).mass == </span><span class="s3">'88' </span><span class="s0">or </span><span class="s3">'7'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_3.package_list </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_2.package_list:</span>
+            <span class="s1">truck_1.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 1&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_1.path:</span>
+                <span class="s1">truck_1.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># truck 2 will get 16 packages</span>
+        <span class="s5"># 9am package will be added to truck 2</span>
+        <span class="s0">elif </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'9:00 AM'</span><span class="s1">:</span>
+            <span class="s1">truck_2.package_list.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                <span class="s1">truck_2.path.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s0">elif </span><span class="s3">'1060' </span><span class="s0">in </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address:</span>
+            <span class="s1">truck_2.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                <span class="s1">truck_2.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s0">elif </span><span class="s3">'2010' </span><span class="s0">in </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'10:30 AM'</span><span class="s1">:</span>
+            <span class="s1">truck_2.package_list.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                <span class="s1">truck_2.path.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># 10:30 am packages required for truck 2 will be added</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'10:30 AM'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">((</span><span class="s3">'Must be delivered' </span><span class="s0">in </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes) </span><span class="s0">or </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID == </span><span class="s4">34</span><span class="s1">)):</span>
+            <span class="s1">truck_2.package_list.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                <span class="s1">truck_2.path.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># packages specifically needed on truck 2 but EOD are added to the right of deque</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'EOD'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">'Can only be on truck 2'</span><span class="s1">):</span>
+            <span class="s1">truck_2.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+            <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+            <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                <span class="s1">truck_2.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># adding extra EOD packages to end of truck 2 to fill it to max capacity if they aren't already in truck 1</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'EOD'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">''</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID &gt;= </span><span class="s4">24</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_1.package_list):</span>
+            <span class="s0">if </span><span class="s1">len(truck_2.package_list) &lt; truck_2.max_packages:</span>
+                <span class="s1">truck_2.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+                <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                    <span class="s1">truck_2.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># truck 2 will add the delayed packages that have a deadline to the left of deque</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'10:30 AM'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">'Delayed on flight---will not arrive to depot until 9:05 am'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_3.package_list </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_1.package_list:</span>
+            <span class="s0">if </span><span class="s1">len(truck_2.package_list) &lt; truck_2.max_packages:</span>
+                <span class="s1">truck_2.package_list.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 2&quot;</span>
+                <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_2.path:</span>
+                    <span class="s1">truck_2.path.appendleft(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># truck 3 will start getting 16 packages</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'EOD'</span><span class="s1">) </span><span class="s0">and </span><span class="s1">\</span>
+                <span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">'Delayed on flight---will not arrive to depot until 9:05 am' </span><span class="s0">or</span>
+                    <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">'Wrong address listed'</span><span class="s1">):</span>
+            <span class="s0">if </span><span class="s1">len(truck_3.package_list) &lt; truck_3.max_packages:</span>
+                <span class="s1">truck_3.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 3&quot;</span>
+                <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_3.path:</span>
+                    <span class="s1">truck_3.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+
+        <span class="s5"># truck 3 will add the rest of the non-urgent packages that aren't already in trucks 1 and 2</span>
+        <span class="s0">elif </span><span class="s1">(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).deadline == </span><span class="s3">'EOD' </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).notes == </span><span class="s3">''</span><span class="s1">) </span><span class="s0">and </span><span class="s1">(</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_1.package_list </span><span class="s0">and </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID </span><span class="s0">not in </span><span class="s1">truck_2.package_list):</span>
+            <span class="s0">if </span><span class="s1">len(truck_3.package_list) &lt; truck_3.max_packages:</span>
+                <span class="s1">truck_3.package_list.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).ID)</span>
+                <span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).truck = </span><span class="s3">&quot;Truck 3&quot;</span>
+                <span class="s0">if </span><span class="s1">hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address </span><span class="s0">not in </span><span class="s1">truck_3.path:</span>
+                    <span class="s1">truck_3.path.append(hash_table.search(i + </span><span class="s4">1</span><span class="s1">).address)</span>
+    <span class="s1">truck_1.path.appendleft(truck_1.start_location)</span>
+    <span class="s1">truck_2.path.appendleft(truck_2.start_location)</span>
+    <span class="s1">truck_3.path.appendleft(truck_3.start_location)</span>
+
+    <span class="s5"># run the nearest neighbor to sort the path from each truck</span>
+    <span class="s1">nearest_neighbor_path_sort(truck_1)</span>
+    <span class="s1">nearest_neighbor_path_sort(truck_2)</span>
+    <span class="s1">nearest_neighbor_path_sort(truck_3)</span>
+
+
+<span class="s5"># calculate total path miles for a given truck</span>
+<span class="s0">def </span><span class="s1">calculate_path_miles(truck):</span>
+    <span class="s2">&quot;&quot;&quot; 
+    O(N) 
+ 
+    Calculate the total path miles for a given truck. This will be used later to calculate the total distance traveled. 
+    :param truck: Takes in a truck object as parameter, and uses the truck's path_miles attribute. 
+    :return: Total path miles driven by the truck 
+    &quot;&quot;&quot;</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">location </span><span class="s0">in </span><span class="s1">enumerate(truck.path):</span>
+        <span class="s0">if </span><span class="s1">i &gt; </span><span class="s4">0</span><span class="s1">:</span>
+            <span class="s1">prev = truck.path[i - </span><span class="s4">1</span><span class="s1">]</span>
+            <span class="s1">curr = truck.path[i]</span>
+
+            <span class="s1">truck.path_miles += distance_dict[prev</span><span class="s0">, </span><span class="s1">curr]</span>
+    <span class="s0">return </span><span class="s1">truck.path_miles</span>
+
+
+<span class="s0">def </span><span class="s1">send_out_trucks(truck_1</span><span class="s0">, </span><span class="s1">truck_2</span><span class="s0">, </span><span class="s1">truck_3):</span>
+    <span class="s2">&quot;&quot;&quot; 
+    O(N^2) 
+ 
+    This function takes in truck objects and sends them out. It initializes their time and time they leave the hub. It 
+    also updates the status once they leave and when they're delivered. 
+ 
+    :param truck_1: Takes in a truck object. I'll use Truck with ID 1 here 
+    :param truck_2: Takes in a truck object. I'll use Truck with ID 2 here 
+    :param truck_3: Takes in a truck object. I'll use Truck with ID 3 here 
+    :return: Doesn't return anything. It just update's the truck's status and time after sending out. 
+    &quot;&quot;&quot;</span>
+    <span class="s1">truck_1.time_left_hub = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">9</span><span class="s0">, </span><span class="s4">5</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s1">truck_1.time = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">9</span><span class="s0">, </span><span class="s4">5</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s1">truck_2.time_left_hub = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">8</span><span class="s0">, </span><span class="s4">0</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span>
+    <span class="s1">truck_2.time = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">8</span><span class="s0">, </span><span class="s4">0</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span>
+    <span class="s1">truck_3.time_left_hub = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">10</span><span class="s0">, </span><span class="s4">30</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span>
+    <span class="s1">truck_3.time = datetime.datetime(</span><span class="s4">2021</span><span class="s0">, </span><span class="s4">4</span><span class="s0">, </span><span class="s4">13</span><span class="s0">, </span><span class="s4">10</span><span class="s0">, </span><span class="s4">30</span><span class="s0">, </span><span class="s4">0</span><span class="s1">)</span>
+
+    <span class="s5"># set time left hub for packages on each truck and update package status to in route</span>
+    <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_1.package_list)):</span>
+        <span class="s1">myHashTable.search(truck_1.package_list[package]).time_left_hub = truck_1.time_left_hub.time()</span>
+        <span class="s1">myHashTable.search(truck_1.package_list[package]).status = </span><span class="s3">&quot;En Route - Truck 1&quot;</span>
+
+    <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_2.package_list)):</span>
+        <span class="s1">myHashTable.search(truck_2.package_list[package]).time_left_hub = truck_2.time_left_hub.time()</span>
+        <span class="s1">myHashTable.search(truck_2.package_list[package]).status = </span><span class="s3">&quot;En Route - Truck 2&quot;</span>
+
+    <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_3.package_list)):</span>
+        <span class="s1">myHashTable.search(truck_3.package_list[package]).time_left_hub = truck_3.time_left_hub.time()</span>
+        <span class="s1">myHashTable.search(truck_3.package_list[package]).status = </span><span class="s3">&quot;En Route - Truck 3&quot;</span>
+
+    <span class="s5"># send out truck 1</span>
+    <span class="s5"># pop the first item in the path because it is the hub's address</span>
+    <span class="s1">truck_1.path.popleft()</span>
+    <span class="s1">truck1_path_copy = list(truck_1.path)</span>
+    <span class="s5"># iterate through the copy of the truck's path and the package list, O(N^2)</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">path </span><span class="s0">in </span><span class="s1">enumerate(truck1_path_copy):</span>
+        <span class="s1">truck_1.distance_traveled += distance_dict[truck_1.current_location</span><span class="s0">, </span><span class="s1">truck1_path_copy[i]]</span>
+        <span class="s1">distance_in_minutes = </span><span class="s4">3.33 </span><span class="s1">* distance_dict[truck_1.current_location</span><span class="s0">, </span><span class="s1">truck1_path_copy[i]]</span>
+        <span class="s1">minutes_added = datetime.timedelta(minutes=distance_in_minutes)</span>
+        <span class="s1">truck_1.time = truck_1.time + minutes_added</span>
+        <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_1.package_list)):</span>
+            <span class="s0">if </span><span class="s1">myHashTable.search(truck_1.package_list[package]).address == truck1_path_copy[i]:</span>
+                <span class="s1">myHashTable.search(truck_1.package_list[package]).status = </span><span class="s3">&quot;Delivered at &quot; </span><span class="s1">+ str(truck_1.time.time())</span>
+                <span class="s1">myHashTable.search(truck_1.package_list[package]).time_delivered = truck_1.time.time().strftime(</span><span class="s3">'%H:%M:%S'</span><span class="s1">)</span>
+        <span class="s1">truck_1.current_location = truck1_path_copy[i]</span>
+        <span class="s1">truck_1.path.popleft()</span>
+
+    <span class="s5"># send out truck 2</span>
+    <span class="s5"># pop the first item in the path because it is the hub's address</span>
+    <span class="s1">truck_2.path.popleft()</span>
+    <span class="s1">truck2_path_copy = list(truck_2.path)</span>
+    <span class="s5"># iterate through the copy of the truck's path and the package list, O(N^2)</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">path </span><span class="s0">in </span><span class="s1">enumerate(truck2_path_copy):</span>
+        <span class="s1">truck_2.distance_traveled += distance_dict[truck_2.current_location</span><span class="s0">, </span><span class="s1">truck2_path_copy[i]]</span>
+        <span class="s1">distance_in_minutes2 = </span><span class="s4">3.33 </span><span class="s1">* distance_dict[truck_2.current_location</span><span class="s0">, </span><span class="s1">truck2_path_copy[i]]</span>
+        <span class="s1">minutes_added = datetime.timedelta(minutes=distance_in_minutes2)</span>
+        <span class="s1">truck_2.time = truck_2.time + minutes_added</span>
+        <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_2.package_list)):</span>
+            <span class="s0">if </span><span class="s1">myHashTable.search(truck_2.package_list[package]).address == truck2_path_copy[i]:</span>
+                <span class="s1">myHashTable.search(truck_2.package_list[package]).status = </span><span class="s3">&quot;Delivered at &quot; </span><span class="s1">+ str(truck_2.time.time())</span>
+                <span class="s1">myHashTable.search(truck_2.package_list[package]).time_delivered = truck_2.time.time().strftime(</span><span class="s3">'%H:%M:%S'</span><span class="s1">)</span>
+        <span class="s1">truck_2.current_location = truck2_path_copy[i]</span>
+        <span class="s1">truck_2.path.popleft()</span>
+
+    <span class="s5"># send out truck 3</span>
+    <span class="s5"># pop the first item in the path because it is the hub's address</span>
+    <span class="s1">truck_3.path.popleft()</span>
+    <span class="s1">truck3_path_copy = list(truck_3.path)</span>
+    <span class="s5"># iterate through the copy of the truck's path and the package list, O(N^2)</span>
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">path </span><span class="s0">in </span><span class="s1">enumerate(truck3_path_copy):</span>
+        <span class="s1">truck_3.distance_traveled += distance_dict[truck_3.current_location</span><span class="s0">, </span><span class="s1">truck3_path_copy[i]]</span>
+        <span class="s1">distance_in_minutes3 = </span><span class="s4">3.33 </span><span class="s1">* distance_dict[truck_3.current_location</span><span class="s0">, </span><span class="s1">truck3_path_copy[i]]</span>
+        <span class="s1">minutes_added = datetime.timedelta(minutes=distance_in_minutes3)</span>
+        <span class="s1">truck_3.time = truck_3.time + minutes_added</span>
+        <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">range(len(truck_3.package_list)):</span>
+            <span class="s0">if </span><span class="s1">myHashTable.search(truck_3.package_list[package]).address == truck3_path_copy[i]:</span>
+                <span class="s1">myHashTable.search(truck_3.package_list[package]).status = </span><span class="s3">&quot;Delivered at &quot; </span><span class="s1">+ str(truck_3.time.time())</span>
+                <span class="s1">myHashTable.search(truck_3.package_list[package]).time_delivered = truck_3.time.time().strftime(</span><span class="s3">'%H:%M:%S'</span><span class="s1">)</span>
+        <span class="s1">truck_3.current_location = truck3_path_copy[i]</span>
+        <span class="s1">truck_3.path.popleft()</span>
+</pre>
+</body>
+</html>

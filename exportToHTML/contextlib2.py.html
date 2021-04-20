@@ -1,0 +1,540 @@
+<html>
+<head>
+<title>contextlib2.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+contextlib2.py</font>
+</center></td></tr></table>
+<pre><span class="s0">&quot;&quot;&quot;contextlib2 - backports and enhancements to the contextlib module&quot;&quot;&quot;</span>
+
+<span class="s2">import </span><span class="s1">abc</span>
+<span class="s2">import </span><span class="s1">sys</span>
+<span class="s2">import </span><span class="s1">warnings</span>
+<span class="s2">from </span><span class="s1">collections </span><span class="s2">import </span><span class="s1">deque</span>
+<span class="s2">from </span><span class="s1">functools </span><span class="s2">import </span><span class="s1">wraps</span>
+
+<span class="s1">__all__ = [</span><span class="s3">&quot;contextmanager&quot;</span><span class="s2">, </span><span class="s3">&quot;closing&quot;</span><span class="s2">, </span><span class="s3">&quot;nullcontext&quot;</span><span class="s2">,</span>
+           <span class="s3">&quot;AbstractContextManager&quot;</span><span class="s2">,</span>
+           <span class="s3">&quot;ContextDecorator&quot;</span><span class="s2">, </span><span class="s3">&quot;ExitStack&quot;</span><span class="s2">,</span>
+           <span class="s3">&quot;redirect_stdout&quot;</span><span class="s2">, </span><span class="s3">&quot;redirect_stderr&quot;</span><span class="s2">, </span><span class="s3">&quot;suppress&quot;</span><span class="s1">]</span>
+
+<span class="s4"># Backwards compatibility</span>
+<span class="s1">__all__ += [</span><span class="s3">&quot;ContextStack&quot;</span><span class="s1">]</span>
+
+
+<span class="s4"># Backport abc.ABC</span>
+<span class="s2">if </span><span class="s1">sys.version_info[:</span><span class="s5">2</span><span class="s1">] &gt;= (</span><span class="s5">3</span><span class="s2">, </span><span class="s5">4</span><span class="s1">):</span>
+    <span class="s1">_abc_ABC = abc.ABC</span>
+<span class="s2">else</span><span class="s1">:</span>
+    <span class="s1">_abc_ABC = abc.ABCMeta(</span><span class="s3">'ABC'</span><span class="s2">, </span><span class="s1">(object</span><span class="s2">,</span><span class="s1">)</span><span class="s2">, </span><span class="s1">{</span><span class="s3">'__slots__'</span><span class="s1">: ()})</span>
+
+
+<span class="s4"># Backport classic class MRO</span>
+<span class="s2">def </span><span class="s1">_classic_mro(C</span><span class="s2">, </span><span class="s1">result):</span>
+    <span class="s2">if </span><span class="s1">C </span><span class="s2">in </span><span class="s1">result:</span>
+        <span class="s2">return</span>
+    <span class="s1">result.append(C)</span>
+    <span class="s2">for </span><span class="s1">B </span><span class="s2">in </span><span class="s1">C.__bases__:</span>
+        <span class="s1">_classic_mro(B</span><span class="s2">, </span><span class="s1">result)</span>
+    <span class="s2">return </span><span class="s1">result</span>
+
+
+<span class="s4"># Backport _collections_abc._check_methods</span>
+<span class="s2">def </span><span class="s1">_check_methods(C</span><span class="s2">, </span><span class="s1">*methods):</span>
+    <span class="s2">try</span><span class="s1">:</span>
+        <span class="s1">mro = C.__mro__</span>
+    <span class="s2">except </span><span class="s1">AttributeError:</span>
+        <span class="s1">mro = tuple(_classic_mro(C</span><span class="s2">, </span><span class="s1">[]))</span>
+
+    <span class="s2">for </span><span class="s1">method </span><span class="s2">in </span><span class="s1">methods:</span>
+        <span class="s2">for </span><span class="s1">B </span><span class="s2">in </span><span class="s1">mro:</span>
+            <span class="s2">if </span><span class="s1">method </span><span class="s2">in </span><span class="s1">B.__dict__:</span>
+                <span class="s2">if </span><span class="s1">B.__dict__[method] </span><span class="s2">is None</span><span class="s1">:</span>
+                    <span class="s2">return </span><span class="s1">NotImplemented</span>
+                <span class="s2">break</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s2">return </span><span class="s1">NotImplemented</span>
+    <span class="s2">return True</span>
+
+
+<span class="s2">class </span><span class="s1">AbstractContextManager(_abc_ABC):</span>
+    <span class="s0">&quot;&quot;&quot;An abstract base class for context managers.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s0">&quot;&quot;&quot;Return `self` upon entering the runtime context.&quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">self</span>
+
+    <span class="s1">@abc.abstractmethod</span>
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">exc_type</span><span class="s2">, </span><span class="s1">exc_value</span><span class="s2">, </span><span class="s1">traceback):</span>
+        <span class="s0">&quot;&quot;&quot;Raise any exception triggered within the runtime context.&quot;&quot;&quot;</span>
+        <span class="s2">return None</span>
+
+    <span class="s1">@classmethod</span>
+    <span class="s2">def </span><span class="s1">__subclasshook__(cls</span><span class="s2">, </span><span class="s1">C):</span>
+        <span class="s0">&quot;&quot;&quot;Check whether subclass is considered a subclass of this ABC.&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">cls </span><span class="s2">is </span><span class="s1">AbstractContextManager:</span>
+            <span class="s2">return </span><span class="s1">_check_methods(C</span><span class="s2">, </span><span class="s3">&quot;__enter__&quot;</span><span class="s2">, </span><span class="s3">&quot;__exit__&quot;</span><span class="s1">)</span>
+        <span class="s2">return </span><span class="s1">NotImplemented</span>
+
+
+<span class="s2">class </span><span class="s1">ContextDecorator(object):</span>
+    <span class="s0">&quot;&quot;&quot;A base class or mixin that enables context managers to work as decorators.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">refresh_cm(self):</span>
+        <span class="s0">&quot;&quot;&quot;Returns the context manager used to actually wrap the call to the 
+        decorated function. 
+ 
+        The default implementation just returns *self*. 
+ 
+        Overriding this method allows otherwise one-shot context managers 
+        like _GeneratorContextManager to support use as decorators via 
+        implicit recreation. 
+ 
+        DEPRECATED: refresh_cm was never added to the standard library's 
+                    ContextDecorator API 
+        &quot;&quot;&quot;</span>
+        <span class="s1">warnings.warn(</span><span class="s3">&quot;refresh_cm was never added to the standard library&quot;</span><span class="s2">,</span>
+                      <span class="s1">DeprecationWarning)</span>
+        <span class="s2">return </span><span class="s1">self._recreate_cm()</span>
+
+    <span class="s2">def </span><span class="s1">_recreate_cm(self):</span>
+        <span class="s0">&quot;&quot;&quot;Return a recreated instance of self. 
+ 
+        Allows an otherwise one-shot context manager like 
+        _GeneratorContextManager to support use as 
+        a decorator via implicit recreation. 
+ 
+        This is a private interface just for _GeneratorContextManager. 
+        See issue #11647 for details. 
+        &quot;&quot;&quot;</span>
+        <span class="s2">return </span><span class="s1">self</span>
+
+    <span class="s2">def </span><span class="s1">__call__(self</span><span class="s2">, </span><span class="s1">func):</span>
+        <span class="s1">@wraps(func)</span>
+        <span class="s2">def </span><span class="s1">inner(*args</span><span class="s2">, </span><span class="s1">**kwds):</span>
+            <span class="s2">with </span><span class="s1">self._recreate_cm():</span>
+                <span class="s2">return </span><span class="s1">func(*args</span><span class="s2">, </span><span class="s1">**kwds)</span>
+        <span class="s2">return </span><span class="s1">inner</span>
+
+
+<span class="s2">class </span><span class="s1">_GeneratorContextManager(ContextDecorator):</span>
+    <span class="s0">&quot;&quot;&quot;Helper for @contextmanager decorator.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">func</span><span class="s2">, </span><span class="s1">args</span><span class="s2">, </span><span class="s1">kwds):</span>
+        <span class="s1">self.gen = func(*args</span><span class="s2">, </span><span class="s1">**kwds)</span>
+        <span class="s1">self.func</span><span class="s2">, </span><span class="s1">self.args</span><span class="s2">, </span><span class="s1">self.kwds = func</span><span class="s2">, </span><span class="s1">args</span><span class="s2">, </span><span class="s1">kwds</span>
+        <span class="s4"># Issue 19330: ensure context manager instances have good docstrings</span>
+        <span class="s1">doc = getattr(func</span><span class="s2">, </span><span class="s3">&quot;__doc__&quot;</span><span class="s2">, None</span><span class="s1">)</span>
+        <span class="s2">if </span><span class="s1">doc </span><span class="s2">is None</span><span class="s1">:</span>
+            <span class="s1">doc = type(self).__doc__</span>
+        <span class="s1">self.__doc__ = doc</span>
+        <span class="s4"># Unfortunately, this still doesn't provide good help output when</span>
+        <span class="s4"># inspecting the created context manager instances, since pydoc</span>
+        <span class="s4"># currently bypasses the instance docstring and shows the docstring</span>
+        <span class="s4"># for the class instead.</span>
+        <span class="s4"># See http://bugs.python.org/issue19404 for more details.</span>
+
+    <span class="s2">def </span><span class="s1">_recreate_cm(self):</span>
+        <span class="s4"># _GCM instances are one-shot context managers, so the</span>
+        <span class="s4"># CM must be recreated each time a decorated function is</span>
+        <span class="s4"># called</span>
+        <span class="s2">return </span><span class="s1">self.__class__(self.func</span><span class="s2">, </span><span class="s1">self.args</span><span class="s2">, </span><span class="s1">self.kwds)</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s2">return </span><span class="s1">next(self.gen)</span>
+        <span class="s2">except </span><span class="s1">StopIteration:</span>
+            <span class="s2">raise </span><span class="s1">RuntimeError(</span><span class="s3">&quot;generator didn't yield&quot;</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">type</span><span class="s2">, </span><span class="s1">value</span><span class="s2">, </span><span class="s1">traceback):</span>
+        <span class="s2">if </span><span class="s1">type </span><span class="s2">is None</span><span class="s1">:</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s1">next(self.gen)</span>
+            <span class="s2">except </span><span class="s1">StopIteration:</span>
+                <span class="s2">return</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s2">raise </span><span class="s1">RuntimeError(</span><span class="s3">&quot;generator didn't stop&quot;</span><span class="s1">)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">value </span><span class="s2">is None</span><span class="s1">:</span>
+                <span class="s4"># Need to force instantiation so we can reliably</span>
+                <span class="s4"># tell if we get the same exception back</span>
+                <span class="s1">value = type()</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s1">self.gen.throw(type</span><span class="s2">, </span><span class="s1">value</span><span class="s2">, </span><span class="s1">traceback)</span>
+                <span class="s2">raise </span><span class="s1">RuntimeError(</span><span class="s3">&quot;generator didn't stop after throw()&quot;</span><span class="s1">)</span>
+            <span class="s2">except </span><span class="s1">StopIteration </span><span class="s2">as </span><span class="s1">exc:</span>
+                <span class="s4"># Suppress StopIteration *unless* it's the same exception that</span>
+                <span class="s4"># was passed to throw().  This prevents a StopIteration</span>
+                <span class="s4"># raised inside the &quot;with&quot; statement from being suppressed.</span>
+                <span class="s2">return </span><span class="s1">exc </span><span class="s2">is not </span><span class="s1">value</span>
+            <span class="s2">except </span><span class="s1">RuntimeError </span><span class="s2">as </span><span class="s1">exc:</span>
+                <span class="s4"># Don't re-raise the passed in exception</span>
+                <span class="s2">if </span><span class="s1">exc </span><span class="s2">is </span><span class="s1">value:</span>
+                    <span class="s2">return False</span>
+                <span class="s4"># Likewise, avoid suppressing if a StopIteration exception</span>
+                <span class="s4"># was passed to throw() and later wrapped into a RuntimeError</span>
+                <span class="s4"># (see PEP 479).</span>
+                <span class="s2">if </span><span class="s1">_HAVE_EXCEPTION_CHAINING </span><span class="s2">and </span><span class="s1">exc.__cause__ </span><span class="s2">is </span><span class="s1">value:</span>
+                    <span class="s2">return False</span>
+                <span class="s2">raise</span>
+            <span class="s2">except</span><span class="s1">:</span>
+                <span class="s4"># only re-raise if it's *not* the exception that was</span>
+                <span class="s4"># passed to throw(), because __exit__() must not raise</span>
+                <span class="s4"># an exception unless __exit__() itself failed.  But throw()</span>
+                <span class="s4"># has to raise the exception to signal propagation, so this</span>
+                <span class="s4"># fixes the impedance mismatch between the throw() protocol</span>
+                <span class="s4"># and the __exit__() protocol.</span>
+                <span class="s4">#</span>
+                <span class="s2">if </span><span class="s1">sys.exc_info()[</span><span class="s5">1</span><span class="s1">] </span><span class="s2">is not </span><span class="s1">value:</span>
+                    <span class="s2">raise</span>
+
+
+<span class="s2">def </span><span class="s1">contextmanager(func):</span>
+    <span class="s0">&quot;&quot;&quot;@contextmanager decorator. 
+ 
+    Typical usage: 
+ 
+        @contextmanager 
+        def some_generator(&lt;arguments&gt;): 
+            &lt;setup&gt; 
+            try: 
+                yield &lt;value&gt; 
+            finally: 
+                &lt;cleanup&gt; 
+ 
+    This makes this: 
+ 
+        with some_generator(&lt;arguments&gt;) as &lt;variable&gt;: 
+            &lt;body&gt; 
+ 
+    equivalent to this: 
+ 
+        &lt;setup&gt; 
+        try: 
+            &lt;variable&gt; = &lt;value&gt; 
+            &lt;body&gt; 
+        finally: 
+            &lt;cleanup&gt; 
+ 
+    &quot;&quot;&quot;</span>
+    <span class="s1">@wraps(func)</span>
+    <span class="s2">def </span><span class="s1">helper(*args</span><span class="s2">, </span><span class="s1">**kwds):</span>
+        <span class="s2">return </span><span class="s1">_GeneratorContextManager(func</span><span class="s2">, </span><span class="s1">args</span><span class="s2">, </span><span class="s1">kwds)</span>
+    <span class="s2">return </span><span class="s1">helper</span>
+
+
+<span class="s2">class </span><span class="s1">closing(object):</span>
+    <span class="s0">&quot;&quot;&quot;Context to automatically close something at the end of a block. 
+ 
+    Code like this: 
+ 
+        with closing(&lt;module&gt;.open(&lt;arguments&gt;)) as f: 
+            &lt;block&gt; 
+ 
+    is equivalent to this: 
+ 
+        f = &lt;module&gt;.open(&lt;arguments&gt;) 
+        try: 
+            &lt;block&gt; 
+        finally: 
+            f.close() 
+ 
+    &quot;&quot;&quot;</span>
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">thing):</span>
+        <span class="s1">self.thing = thing</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s2">return </span><span class="s1">self.thing</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">*exc_info):</span>
+        <span class="s1">self.thing.close()</span>
+
+
+<span class="s2">class </span><span class="s1">_RedirectStream(object):</span>
+
+    <span class="s1">_stream = </span><span class="s2">None</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">new_target):</span>
+        <span class="s1">self._new_target = new_target</span>
+        <span class="s4"># We use a list of old targets to make this CM re-entrant</span>
+        <span class="s1">self._old_targets = []</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s1">self._old_targets.append(getattr(sys</span><span class="s2">, </span><span class="s1">self._stream))</span>
+        <span class="s1">setattr(sys</span><span class="s2">, </span><span class="s1">self._stream</span><span class="s2">, </span><span class="s1">self._new_target)</span>
+        <span class="s2">return </span><span class="s1">self._new_target</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">exctype</span><span class="s2">, </span><span class="s1">excinst</span><span class="s2">, </span><span class="s1">exctb):</span>
+        <span class="s1">setattr(sys</span><span class="s2">, </span><span class="s1">self._stream</span><span class="s2">, </span><span class="s1">self._old_targets.pop())</span>
+
+
+<span class="s2">class </span><span class="s1">redirect_stdout(_RedirectStream):</span>
+    <span class="s0">&quot;&quot;&quot;Context manager for temporarily redirecting stdout to another file. 
+ 
+        # How to send help() to stderr 
+        with redirect_stdout(sys.stderr): 
+            help(dir) 
+ 
+        # How to write help() to a file 
+        with open('help.txt', 'w') as f: 
+            with redirect_stdout(f): 
+                help(pow) 
+    &quot;&quot;&quot;</span>
+
+    <span class="s1">_stream = </span><span class="s3">&quot;stdout&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">redirect_stderr(_RedirectStream):</span>
+    <span class="s0">&quot;&quot;&quot;Context manager for temporarily redirecting stderr to another file.&quot;&quot;&quot;</span>
+
+    <span class="s1">_stream = </span><span class="s3">&quot;stderr&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">suppress(object):</span>
+    <span class="s0">&quot;&quot;&quot;Context manager to suppress specified exceptions 
+ 
+    After the exception is suppressed, execution proceeds with the next 
+    statement following the with statement. 
+ 
+         with suppress(FileNotFoundError): 
+             os.remove(somefile) 
+         # Execution still resumes here if the file was already removed 
+    &quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">*exceptions):</span>
+        <span class="s1">self._exceptions = exceptions</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s2">pass</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">exctype</span><span class="s2">, </span><span class="s1">excinst</span><span class="s2">, </span><span class="s1">exctb):</span>
+        <span class="s4"># Unlike isinstance and issubclass, CPython exception handling</span>
+        <span class="s4"># currently only looks at the concrete type hierarchy (ignoring</span>
+        <span class="s4"># the instance and subclass checking hooks). While Guido considers</span>
+        <span class="s4"># that a bug rather than a feature, it's a fairly hard one to fix</span>
+        <span class="s4"># due to various internal implementation details. suppress provides</span>
+        <span class="s4"># the simpler issubclass based semantics, rather than trying to</span>
+        <span class="s4"># exactly reproduce the limitations of the CPython interpreter.</span>
+        <span class="s4">#</span>
+        <span class="s4"># See http://bugs.python.org/issue12029 for more details</span>
+        <span class="s2">return </span><span class="s1">exctype </span><span class="s2">is not None and </span><span class="s1">issubclass(exctype</span><span class="s2">, </span><span class="s1">self._exceptions)</span>
+
+
+<span class="s4"># Context manipulation is Python 3 only</span>
+<span class="s1">_HAVE_EXCEPTION_CHAINING = sys.version_info[</span><span class="s5">0</span><span class="s1">] &gt;= </span><span class="s5">3</span>
+<span class="s2">if </span><span class="s1">_HAVE_EXCEPTION_CHAINING:</span>
+    <span class="s2">def </span><span class="s1">_make_context_fixer(frame_exc):</span>
+        <span class="s2">def </span><span class="s1">_fix_exception_context(new_exc</span><span class="s2">, </span><span class="s1">old_exc):</span>
+            <span class="s4"># Context may not be correct, so find the end of the chain</span>
+            <span class="s2">while </span><span class="s5">1</span><span class="s1">:</span>
+                <span class="s1">exc_context = new_exc.__context__</span>
+                <span class="s2">if </span><span class="s1">exc_context </span><span class="s2">is </span><span class="s1">old_exc:</span>
+                    <span class="s4"># Context is already set correctly (see issue 20317)</span>
+                    <span class="s2">return</span>
+                <span class="s2">if </span><span class="s1">exc_context </span><span class="s2">is None or </span><span class="s1">exc_context </span><span class="s2">is </span><span class="s1">frame_exc:</span>
+                    <span class="s2">break</span>
+                <span class="s1">new_exc = exc_context</span>
+            <span class="s4"># Change the end of the chain to point to the exception</span>
+            <span class="s4"># we expect it to reference</span>
+            <span class="s1">new_exc.__context__ = old_exc</span>
+        <span class="s2">return </span><span class="s1">_fix_exception_context</span>
+
+    <span class="s2">def </span><span class="s1">_reraise_with_existing_context(exc_details):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s4"># bare &quot;raise exc_details[1]&quot; replaces our carefully</span>
+            <span class="s4"># set-up context</span>
+            <span class="s1">fixed_ctx = exc_details[</span><span class="s5">1</span><span class="s1">].__context__</span>
+            <span class="s2">raise </span><span class="s1">exc_details[</span><span class="s5">1</span><span class="s1">]</span>
+        <span class="s2">except </span><span class="s1">BaseException:</span>
+            <span class="s1">exc_details[</span><span class="s5">1</span><span class="s1">].__context__ = fixed_ctx</span>
+            <span class="s2">raise</span>
+<span class="s2">else</span><span class="s1">:</span>
+    <span class="s4"># No exception context in Python 2</span>
+    <span class="s2">def </span><span class="s1">_make_context_fixer(frame_exc):</span>
+        <span class="s2">return lambda </span><span class="s1">new_exc</span><span class="s2">, </span><span class="s1">old_exc: </span><span class="s2">None</span>
+
+    <span class="s4"># Use 3 argument raise in Python 2,</span>
+    <span class="s4"># but use exec to avoid SyntaxError in Python 3</span>
+    <span class="s2">def </span><span class="s1">_reraise_with_existing_context(exc_details):</span>
+        <span class="s1">exc_type</span><span class="s2">, </span><span class="s1">exc_value</span><span class="s2">, </span><span class="s1">exc_tb = exc_details</span>
+        <span class="s1">exec(</span><span class="s3">&quot;raise exc_type, exc_value, exc_tb&quot;</span><span class="s1">)</span>
+
+<span class="s4"># Handle old-style classes if they exist</span>
+<span class="s2">try</span><span class="s1">:</span>
+    <span class="s2">from </span><span class="s1">types </span><span class="s2">import </span><span class="s1">InstanceType</span>
+<span class="s2">except </span><span class="s1">ImportError:</span>
+    <span class="s4"># Python 3 doesn't have old-style classes</span>
+    <span class="s1">_get_type = type</span>
+<span class="s2">else</span><span class="s1">:</span>
+    <span class="s4"># Need to handle old-style context managers on Python 2</span>
+    <span class="s2">def </span><span class="s1">_get_type(obj):</span>
+        <span class="s1">obj_type = type(obj)</span>
+        <span class="s2">if </span><span class="s1">obj_type </span><span class="s2">is </span><span class="s1">InstanceType:</span>
+            <span class="s2">return </span><span class="s1">obj.__class__  </span><span class="s4"># Old-style class</span>
+        <span class="s2">return </span><span class="s1">obj_type  </span><span class="s4"># New-style class</span>
+
+
+<span class="s4"># Inspired by discussions on http://bugs.python.org/issue13585</span>
+<span class="s2">class </span><span class="s1">ExitStack(object):</span>
+    <span class="s0">&quot;&quot;&quot;Context manager for dynamic management of a stack of exit callbacks 
+ 
+    For example: 
+ 
+        with ExitStack() as stack: 
+            files = [stack.enter_context(open(fname)) for fname in filenames] 
+            # All opened files will automatically be closed at the end of 
+            # the with statement, even if attempts to open files later 
+            # in the list raise an exception 
+ 
+    &quot;&quot;&quot;</span>
+    <span class="s2">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">self._exit_callbacks = deque()</span>
+
+    <span class="s2">def </span><span class="s1">pop_all(self):</span>
+        <span class="s0">&quot;&quot;&quot;Preserve the context stack by transferring it to a new instance&quot;&quot;&quot;</span>
+        <span class="s1">new_stack = type(self)()</span>
+        <span class="s1">new_stack._exit_callbacks = self._exit_callbacks</span>
+        <span class="s1">self._exit_callbacks = deque()</span>
+        <span class="s2">return </span><span class="s1">new_stack</span>
+
+    <span class="s2">def </span><span class="s1">_push_cm_exit(self</span><span class="s2">, </span><span class="s1">cm</span><span class="s2">, </span><span class="s1">cm_exit):</span>
+        <span class="s0">&quot;&quot;&quot;Helper to correctly register callbacks to __exit__ methods&quot;&quot;&quot;</span>
+        <span class="s2">def </span><span class="s1">_exit_wrapper(*exc_details):</span>
+            <span class="s2">return </span><span class="s1">cm_exit(cm</span><span class="s2">, </span><span class="s1">*exc_details)</span>
+        <span class="s1">_exit_wrapper.__self__ = cm</span>
+        <span class="s1">self.push(_exit_wrapper)</span>
+
+    <span class="s2">def </span><span class="s1">push(self</span><span class="s2">, </span><span class="s1">exit):</span>
+        <span class="s0">&quot;&quot;&quot;Registers a callback with the standard __exit__ method signature 
+ 
+        Can suppress exceptions the same way __exit__ methods can. 
+ 
+        Also accepts any object with an __exit__ method (registering a call 
+        to the method instead of the object itself) 
+        &quot;&quot;&quot;</span>
+        <span class="s4"># We use an unbound method rather than a bound method to follow</span>
+        <span class="s4"># the standard lookup behaviour for special methods</span>
+        <span class="s1">_cb_type = _get_type(exit)</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">exit_method = _cb_type.__exit__</span>
+        <span class="s2">except </span><span class="s1">AttributeError:</span>
+            <span class="s4"># Not a context manager, so assume its a callable</span>
+            <span class="s1">self._exit_callbacks.append(exit)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self._push_cm_exit(exit</span><span class="s2">, </span><span class="s1">exit_method)</span>
+        <span class="s2">return </span><span class="s1">exit </span><span class="s4"># Allow use as a decorator</span>
+
+    <span class="s2">def </span><span class="s1">callback(self</span><span class="s2">, </span><span class="s1">callback</span><span class="s2">, </span><span class="s1">*args</span><span class="s2">, </span><span class="s1">**kwds):</span>
+        <span class="s0">&quot;&quot;&quot;Registers an arbitrary callback and arguments. 
+ 
+        Cannot suppress exceptions. 
+        &quot;&quot;&quot;</span>
+        <span class="s2">def </span><span class="s1">_exit_wrapper(exc_type</span><span class="s2">, </span><span class="s1">exc</span><span class="s2">, </span><span class="s1">tb):</span>
+            <span class="s1">callback(*args</span><span class="s2">, </span><span class="s1">**kwds)</span>
+        <span class="s4"># We changed the signature, so using @wraps is not appropriate, but</span>
+        <span class="s4"># setting __wrapped__ may still help with introspection</span>
+        <span class="s1">_exit_wrapper.__wrapped__ = callback</span>
+        <span class="s1">self.push(_exit_wrapper)</span>
+        <span class="s2">return </span><span class="s1">callback </span><span class="s4"># Allow use as a decorator</span>
+
+    <span class="s2">def </span><span class="s1">enter_context(self</span><span class="s2">, </span><span class="s1">cm):</span>
+        <span class="s0">&quot;&quot;&quot;Enters the supplied context manager 
+ 
+        If successful, also pushes its __exit__ method as a callback and 
+        returns the result of the __enter__ method. 
+        &quot;&quot;&quot;</span>
+        <span class="s4"># We look up the special methods on the type to match the with statement</span>
+        <span class="s1">_cm_type = _get_type(cm)</span>
+        <span class="s1">_exit = _cm_type.__exit__</span>
+        <span class="s1">result = _cm_type.__enter__(cm)</span>
+        <span class="s1">self._push_cm_exit(cm</span><span class="s2">, </span><span class="s1">_exit)</span>
+        <span class="s2">return </span><span class="s1">result</span>
+
+    <span class="s2">def </span><span class="s1">close(self):</span>
+        <span class="s0">&quot;&quot;&quot;Immediately unwind the context stack&quot;&quot;&quot;</span>
+        <span class="s1">self.__exit__(</span><span class="s2">None, None, None</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s2">return </span><span class="s1">self</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">*exc_details):</span>
+        <span class="s1">received_exc = exc_details[</span><span class="s5">0</span><span class="s1">] </span><span class="s2">is not None</span>
+
+        <span class="s4"># We manipulate the exception state so it behaves as though</span>
+        <span class="s4"># we were actually nesting multiple with statements</span>
+        <span class="s1">frame_exc = sys.exc_info()[</span><span class="s5">1</span><span class="s1">]</span>
+        <span class="s1">_fix_exception_context = _make_context_fixer(frame_exc)</span>
+
+        <span class="s4"># Callbacks are invoked in LIFO order to match the behaviour of</span>
+        <span class="s4"># nested context managers</span>
+        <span class="s1">suppressed_exc = </span><span class="s2">False</span>
+        <span class="s1">pending_raise = </span><span class="s2">False</span>
+        <span class="s2">while </span><span class="s1">self._exit_callbacks:</span>
+            <span class="s1">cb = self._exit_callbacks.pop()</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s2">if </span><span class="s1">cb(*exc_details):</span>
+                    <span class="s1">suppressed_exc = </span><span class="s2">True</span>
+                    <span class="s1">pending_raise = </span><span class="s2">False</span>
+                    <span class="s1">exc_details = (</span><span class="s2">None, None, None</span><span class="s1">)</span>
+            <span class="s2">except</span><span class="s1">:</span>
+                <span class="s1">new_exc_details = sys.exc_info()</span>
+                <span class="s4"># simulate the stack of exceptions by setting the context</span>
+                <span class="s1">_fix_exception_context(new_exc_details[</span><span class="s5">1</span><span class="s1">]</span><span class="s2">, </span><span class="s1">exc_details[</span><span class="s5">1</span><span class="s1">])</span>
+                <span class="s1">pending_raise = </span><span class="s2">True</span>
+                <span class="s1">exc_details = new_exc_details</span>
+        <span class="s2">if </span><span class="s1">pending_raise:</span>
+            <span class="s1">_reraise_with_existing_context(exc_details)</span>
+        <span class="s2">return </span><span class="s1">received_exc </span><span class="s2">and </span><span class="s1">suppressed_exc</span>
+
+
+<span class="s4"># Preserve backwards compatibility</span>
+<span class="s2">class </span><span class="s1">ContextStack(ExitStack):</span>
+    <span class="s0">&quot;&quot;&quot;Backwards compatibility alias for ExitStack&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">warnings.warn(</span><span class="s3">&quot;ContextStack has been renamed to ExitStack&quot;</span><span class="s2">,</span>
+                      <span class="s1">DeprecationWarning)</span>
+        <span class="s1">super(ContextStack</span><span class="s2">, </span><span class="s1">self).__init__()</span>
+
+    <span class="s2">def </span><span class="s1">register_exit(self</span><span class="s2">, </span><span class="s1">callback):</span>
+        <span class="s2">return </span><span class="s1">self.push(callback)</span>
+
+    <span class="s2">def </span><span class="s1">register(self</span><span class="s2">, </span><span class="s1">callback</span><span class="s2">, </span><span class="s1">*args</span><span class="s2">, </span><span class="s1">**kwds):</span>
+        <span class="s2">return </span><span class="s1">self.callback(callback</span><span class="s2">, </span><span class="s1">*args</span><span class="s2">, </span><span class="s1">**kwds)</span>
+
+    <span class="s2">def </span><span class="s1">preserve(self):</span>
+        <span class="s2">return </span><span class="s1">self.pop_all()</span>
+
+
+<span class="s2">class </span><span class="s1">nullcontext(AbstractContextManager):</span>
+    <span class="s0">&quot;&quot;&quot;Context manager that does no additional processing. 
+    Used as a stand-in for a normal context manager, when a particular 
+    block of code is only sometimes used with a normal context manager: 
+    cm = optional_cm if condition else nullcontext() 
+    with cm: 
+        # Perform operation, using optional_cm if condition is True 
+    &quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">enter_result=</span><span class="s2">None</span><span class="s1">):</span>
+        <span class="s1">self.enter_result = enter_result</span>
+
+    <span class="s2">def </span><span class="s1">__enter__(self):</span>
+        <span class="s2">return </span><span class="s1">self.enter_result</span>
+
+    <span class="s2">def </span><span class="s1">__exit__(self</span><span class="s2">, </span><span class="s1">*excinfo):</span>
+        <span class="s2">pass</span>
+</pre>
+</body>
+</html>

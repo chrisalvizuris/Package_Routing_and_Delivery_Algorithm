@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>readCSV.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #808080;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+readCSV.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">csv</span>
+<span class="s0">from </span><span class="s1">deliveryPackage </span><span class="s0">import </span><span class="s1">DeliveryPackage</span>
+<span class="s0">from </span><span class="s1">hashTable </span><span class="s0">import </span><span class="s1">ChainingHashTable</span>
+
+<span class="s2">&quot;&quot;&quot; 
+O(N) 
+ 
+Reads the 'WGUPS Package File.csv' file and adds each package into a ChainingHashTable object, called myHashTable. 
+ 
+I set the package's status to 'At the hub'. 
+&quot;&quot;&quot;</span>
+<span class="s0">with </span><span class="s1">open(</span><span class="s2">'WGUPS Package File.csv'</span><span class="s1">) </span><span class="s0">as </span><span class="s1">csv_file:</span>
+    <span class="s1">package_data = csv.reader(csv_file)</span>
+    <span class="s1">myHashTable = ChainingHashTable()</span>
+    <span class="s1">next(package_data)  </span><span class="s3"># skip header</span>
+    <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">package_data:</span>
+        <span class="s1">package_id = int(package[</span><span class="s4">0</span><span class="s1">])  </span><span class="s3"># this needs to be an int for the code to work</span>
+        <span class="s1">package_address = package[</span><span class="s4">1</span><span class="s1">]</span>
+        <span class="s1">package_city = package[</span><span class="s4">2</span><span class="s1">]</span>
+        <span class="s1">package_state = package[</span><span class="s4">3</span><span class="s1">]</span>
+        <span class="s1">package_zip = package[</span><span class="s4">4</span><span class="s1">]</span>
+        <span class="s1">package_deadline = package[</span><span class="s4">5</span><span class="s1">]</span>
+        <span class="s1">package_weight = package[</span><span class="s4">6</span><span class="s1">]</span>
+        <span class="s1">package_notes = package[</span><span class="s4">7</span><span class="s1">]</span>
+        <span class="s1">package_status = </span><span class="s2">&quot;At the hub&quot;</span>
+
+        <span class="s1">package_to_deliver = DeliveryPackage(package_id</span><span class="s0">, </span><span class="s1">package_address</span><span class="s0">, </span><span class="s1">package_city</span><span class="s0">, </span><span class="s1">package_state</span><span class="s0">, </span><span class="s1">package_zip</span><span class="s0">,</span>
+                                             <span class="s1">package_deadline</span><span class="s0">, </span><span class="s1">package_weight</span><span class="s0">, </span><span class="s1">package_notes</span><span class="s0">, </span><span class="s1">package_status)</span>
+
+        <span class="s1">myHashTable.insert(package_id</span><span class="s0">, </span><span class="s1">package_to_deliver)</span>
+</pre>
+</body>
+</html>
